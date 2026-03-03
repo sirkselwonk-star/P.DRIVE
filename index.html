@@ -849,34 +849,35 @@ function drawRoad(style) {
     const bandTop    = screenY;
     const bandBottom = r+1 < rows.length ? rows[r+1].screenY : H;
     const bandH      = Math.max(1, bandBottom - bandTop);
+    const drawH      = Math.max(1, Math.ceil(bandH / 2));
     const absIdx     = startSeg - i;
     const isEven     = Math.floor(absIdx / 2) % 2 === 0;
 
     // Verge
     ctx.fillStyle = isEven ? style.verge[0] : style.verge[1];
-    ctx.fillRect(0, bandTop, W, bandH);
+    ctx.fillRect(0, bandTop, W, drawH);
 
     // Road
     ctx.fillStyle = isEven ? style.road : shadeColor(style.road, 10);
-    ctx.fillRect(Math.round(cx - roadPx), bandTop, Math.round(roadPx*2), bandH);
+    ctx.fillRect(Math.round(cx - roadPx), bandTop, Math.round(roadPx*2), drawH);
 
     // Rumble strips
     const rumbleW = Math.max(2, roadPx * 0.09);
     ctx.fillStyle = isEven ? '#ffffff' : '#cc1122';
-    ctx.fillRect(Math.round(cx - roadPx - rumbleW), bandTop, Math.ceil(rumbleW), bandH);
-    ctx.fillRect(Math.round(cx + roadPx),           bandTop, Math.ceil(rumbleW), bandH);
+    ctx.fillRect(Math.round(cx - roadPx - rumbleW), bandTop, Math.ceil(rumbleW), drawH);
+    ctx.fillRect(Math.round(cx + roadPx),           bandTop, Math.ceil(rumbleW), drawH);
 
     // Centre stripe
     if (isEven) {
       const dashW = Math.max(1.5, roadPx * 0.035);
       ctx.fillStyle = style.stripe;
-      ctx.fillRect(Math.round(cx - dashW), bandTop, Math.ceil(dashW*2), bandH);
+      ctx.fillRect(Math.round(cx - dashW), bandTop, Math.ceil(dashW*2), drawH);
     }
 
     // Coins
     if (seg.coin && i > 4 && i < DRAW_DIST - 8) {
       const coinR = Math.max(4, roadPx * 0.11);
-      const coinY = bandTop + bandH/2;
+      const coinY = bandTop + drawH/2;
       ctx.save();
       ctx.fillStyle = '#FFD700';
       ctx.shadowColor = '#FFD700'; ctx.shadowBlur = 14;
