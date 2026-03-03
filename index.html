@@ -345,7 +345,7 @@ const COINS_PER_UPGRADE = 20;
 // ── Road Constants ────────────────────────────────────────────
 const ROAD_HALF  = 1.9;   // wide road at driver POV
 const DRAW_DIST  = 200;
-const HORIZON    = 0.58;
+const HORIZON    = W > H ? 0.50 : 0.58; // raised vanishing point in landscape
 const SCROLL_DIV = 22;    // lower = faster scene motion
 
 const LEVEL_SPEEDS = [420, 600, 800, 1050, 1350, 1600, 1900, 2250, 2650, 3100];
