@@ -254,6 +254,11 @@ canvas { display: block; }
   #mobile-controls { display: block; }
   #controls-hint   { display: none; }
 }
+
+@media (orientation: landscape) and (pointer: coarse) {
+  #steer-zone { justify-content: flex-start; padding-left: 6%; }
+  #gas-zone   { justify-content: flex-end;   padding-right: 6%; }
+}
 </style>
 </head>
 <body>
@@ -345,7 +350,7 @@ const COINS_PER_UPGRADE = 20;
 // ── Road Constants ────────────────────────────────────────────
 const ROAD_HALF  = 1.9;   // wide road at driver POV
 const DRAW_DIST  = 200;
-const HORIZON    = W > H ? 0.50 : 0.58; // raised vanishing point in landscape
+const HORIZON    = W > H ? 0.45 : 0.58; // raised vanishing point in landscape
 const SCROLL_DIV = 22;    // lower = faster scene motion
 
 const LEVEL_SPEEDS = [420, 600, 800, 1050, 1350, 1600, 1900, 2250, 2650, 3100];
