@@ -31,14 +31,14 @@ canvas { display: block; }
 
 #dashCanvas {
   border: 2px solid #FFD700;
-  border-bottom: 1px solid #3a2e00;
+  border-top: 1px solid #3a2e00;
   background: #080808;
   box-shadow: 0 0 48px #FFD70066, 0 0 100px #FFD70022;
 }
 
 #gameCanvas {
   border: 2px solid #FFD700;
-  border-top: none;
+  border-bottom: none;
   box-shadow: 0 0 48px #FFD70066, 0 0 100px #FFD70022;
 }
 
@@ -265,8 +265,8 @@ canvas { display: block; }
 <body>
 
 <div id="wrapper">
-  <canvas id="dashCanvas"></canvas>
   <canvas id="gameCanvas"></canvas>
+  <canvas id="dashCanvas"></canvas>
 
   <div id="overlay">
     <div class="eyebrow">WELCOME TO</div>
@@ -299,8 +299,10 @@ const dctx       = dashCanvas.getContext('2d');
 // ── Sizing ────────────────────────────────────────────────────
 const DASH_H = 48;
 const W  = window.innerWidth;
-const H  = window.innerHeight - DASH_H;
-const DW = W;
+const isTouchOrSmall   = window.matchMedia('(pointer: coarse)').matches || W <= 820;
+const isLandscapeTouch = isTouchOrSmall && window.innerWidth > window.innerHeight;
+const H  = isLandscapeTouch ? window.innerHeight : window.innerHeight - DASH_H;
+const DW = isLandscapeTouch ? Math.floor(W * 0.5) : W;
 const DH = DASH_H;
 
 canvas.width      = W;  canvas.height      = H;
@@ -308,9 +310,17 @@ dashCanvas.width  = DW; dashCanvas.height  = DH;
 
 const wrapper = document.getElementById('wrapper');
 wrapper.style.width  = W + 'px';
-wrapper.style.height = (H + DH) + 'px';
+wrapper.style.height = (isLandscapeTouch ? H : H + DH) + 'px';
 
-const isTouchOrSmall = window.matchMedia('(pointer: coarse)').matches || W <= 820;
+if (isLandscapeTouch) {
+  dashCanvas.style.position     = 'absolute';
+  dashCanvas.style.bottom       = '8px';
+  dashCanvas.style.left         = '50%';
+  dashCanvas.style.transform    = 'translateX(-50%)';
+  dashCanvas.style.zIndex       = '14';
+  dashCanvas.style.pointerEvents = 'none';
+}
+
 document.getElementById('mobile-controls').style.display = isTouchOrSmall ? 'block' : 'none';
 document.getElementById('controls-hint').style.display   = isTouchOrSmall ? 'none'  : 'block';
 
@@ -1189,8 +1199,8 @@ function showCarUpgrade() {
   const skin = CAR_SKINS[carSkin];
   const el = document.createElement('div');
   el.style.cssText = `
-    position:absolute; top:38%; left:50%;
-    transform:translate(-50%,-50%) scale(0.7);
+    position:absolute; top:9%; left:50%;
+    transform:translate(-50%,0) scale(0.7);
     display:flex; flex-direction:column; align-items:center; gap:6px;
     pointer-events:none; z-index:16; opacity:0;
     transition:transform 0.3s cubic-bezier(.175,.885,.32,1.4), opacity 0.3s;
@@ -1202,12 +1212,12 @@ function showCarUpgrade() {
   `;
   document.getElementById('wrapper').appendChild(el);
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    el.style.transform = 'translate(-50%,-50%) scale(1)';
+    el.style.transform = 'translate(-50%,0) scale(1)';
     el.style.opacity   = '1';
   }));
   setTimeout(() => {
     el.style.opacity   = '0';
-    el.style.transform = 'translate(-50%,-50%) scale(1.08)';
+    el.style.transform = 'translate(-50%,0) scale(1.08)';
     setTimeout(() => el.remove(), 350);
   }, 1600);
 }
@@ -1216,8 +1226,8 @@ function showLevelUp() {
   const style = artStyles[level - 1];
   const flash = document.createElement('div');
   flash.style.cssText=`
-    position:absolute; top:10%; left:50%;
-    transform:translate(-50%,0) scale(0.6);
+    position:absolute; top:26%; left:50%;
+    transform:translate(-50%,-50%) scale(0.6);
     display:flex; flex-direction:column; align-items:center; gap:8px;
     pointer-events:none; z-index:15;
     transition:transform 0.28s cubic-bezier(.175,.885,.32,1.5), opacity 0.28s;
@@ -1229,12 +1239,12 @@ function showLevelUp() {
   `;
   document.getElementById('wrapper').appendChild(flash);
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    flash.style.transform='translate(-50%,0) scale(1)';
+    flash.style.transform='translate(-50%,-50%) scale(1)';
     flash.style.opacity='1';
   }));
   setTimeout(()=>{
     flash.style.opacity='0';
-    flash.style.transform='translate(-50%,0) scale(1.15)';
+    flash.style.transform='translate(-50%,-50%) scale(1.15)';
     setTimeout(()=>flash.remove(), 300);
   }, 1800);
 }
