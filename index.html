@@ -371,6 +371,7 @@ let player = { x:0, speed:0, falling:false, fallY:0, fallVY:0 };
 
 // ── Road ──────────────────────────────────────────────────────
 let segments = [], roadOffset = 0;
+let dashTextX = -1;
 
 function buildRoad() {
   segments = [];
@@ -1044,26 +1045,39 @@ function drawDashboard() {
   bg.addColorStop(0, '#181818'); bg.addColorStop(1, '#0a0a0a');
   dctx.fillStyle = bg; dctx.fillRect(0, 0, DW, DH);
 
-  dctx.strokeStyle = 'rgba(255,215,0,0.05)'; dctx.lineWidth = 1;
-  for (let x = 0; x < DW; x += 48) {
-    dctx.beginPath(); dctx.moveTo(x,0); dctx.lineTo(x,DH); dctx.stroke();
-  }
-  dctx.beginPath(); dctx.moveTo(0,DH-1); dctx.lineTo(DW,DH-1);
-  dctx.strokeStyle = 'rgba(255,215,0,0.2)'; dctx.stroke();
+  dctx.beginPath(); dctx.moveTo(0, DH-1); dctx.lineTo(DW, DH-1);
+  dctx.strokeStyle = 'rgba(255,215,0,0.2)'; dctx.lineWidth = 1; dctx.stroke();
 
-  // Level name watermark
+  // Zone dividers separating dial pairs from scrolling centre
+  const cx0 = Math.round(DW * 0.32);
+  const cx1 = Math.round(DW * 0.68);
+  dctx.strokeStyle = 'rgba(255,215,0,0.22)'; dctx.lineWidth = 1;
+  dctx.beginPath(); dctx.moveTo(cx0, 5); dctx.lineTo(cx0, DH-5); dctx.stroke();
+  dctx.beginPath(); dctx.moveTo(cx1, 5); dctx.lineTo(cx1, DH-5); dctx.stroke();
+
+  // Scrolling level name in centre zone
   if (state === 'playing') {
-    dctx.font = '700 9px Orbitron';
+    const txt = getStyle().name;
+    dctx.font = '900 13px Orbitron';
+    const txtW = dctx.measureText(txt).width;
+    if (dashTextX < 0) dashTextX = cx1 + txtW / 2 + 16;
+    dashTextX -= 1.1;
+    if (dashTextX < cx0 - txtW / 2 - 16) dashTextX = cx1 + txtW / 2 + 16;
+
+    dctx.save();
+    dctx.beginPath(); dctx.rect(cx0, 0, cx1 - cx0, DH); dctx.clip();
     dctx.textAlign = 'center'; dctx.textBaseline = 'middle';
-    dctx.fillStyle = 'rgba(255,215,0,0.25)';
-    dctx.fillText(getStyle().name, DW/2, DH/2);
+    dctx.shadowColor = '#FFD700'; dctx.shadowBlur = 20;
+    dctx.fillStyle = '#FFD700';
+    dctx.fillText(txt, dashTextX, DH / 2);
+    dctx.restore();
   }
 
   const dials = [
-    { x:DW*0.10, label:'SPEED', value:Math.min(player.speed,420), max:420,   isSpeed:true  },
-    { x:DW*0.35, label:'LEVEL', value:level,                      max:5,     isSpeed:false },
-    { x:DW*0.65, label:'COINS', value:coins,                      max:50,    isSpeed:false },
-    { x:DW*0.90, label:'DIST',  value:Math.min(distanceTravelled,12000), max:12000, isSpeed:false },
+    { x:DW*0.07, label:'SPEED', value:Math.min(player.speed,420), max:420,   isSpeed:true  },
+    { x:DW*0.22, label:'LEVEL', value:level,                      max:5,     isSpeed:false },
+    { x:DW*0.78, label:'COINS', value:coins,                      max:50,    isSpeed:false },
+    { x:DW*0.93, label:'DIST',  value:Math.min(distanceTravelled,12000), max:12000, isSpeed:false },
   ];
   dials.forEach(d => drawDial(d.x, DH*0.5, 17, d));
 }
