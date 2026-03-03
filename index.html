@@ -825,11 +825,12 @@ function drawRoad(style) {
   const startSeg  = Math.floor(roadOffset);
 
   const rows = [];
+  const roadViewW = Math.min(W, H * 1.2); // cap road width in landscape
   for (let i = 0; i < DRAW_DIST; i++) {
     const segIdx  = (startSeg + i) % segments.length;
     const depth   = i + 1 + subOffset;
     const screenY = Math.round(H - groundH * (1 - 1/depth));
-    const roadPx  = (ROAD_HALF * W * 0.5) / depth;
+    const roadPx  = (ROAD_HALF * roadViewW * 0.5) / depth;
     if (screenY < horizonY || screenY >= H) continue;
     rows.push({ i, seg: segments[segIdx], screenY, roadPx });
   }
