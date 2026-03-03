@@ -1216,8 +1216,8 @@ function showLevelUp() {
   const style = artStyles[level - 1];
   const flash = document.createElement('div');
   flash.style.cssText=`
-    position:absolute; top:50%; left:50%;
-    transform:translate(-50%,-50%) scale(0.6);
+    position:absolute; top:10%; left:50%;
+    transform:translate(-50%,0) scale(0.6);
     display:flex; flex-direction:column; align-items:center; gap:8px;
     pointer-events:none; z-index:15;
     transition:transform 0.28s cubic-bezier(.175,.885,.32,1.5), opacity 0.28s;
@@ -1229,12 +1229,12 @@ function showLevelUp() {
   `;
   document.getElementById('wrapper').appendChild(flash);
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    flash.style.transform='translate(-50%,-50%) scale(1)';
+    flash.style.transform='translate(-50%,0) scale(1)';
     flash.style.opacity='1';
   }));
   setTimeout(()=>{
     flash.style.opacity='0';
-    flash.style.transform='translate(-50%,-50%) scale(1.15)';
+    flash.style.transform='translate(-50%,0) scale(1.15)';
     setTimeout(()=>flash.remove(), 300);
   }, 1800);
 }
