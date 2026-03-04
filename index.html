@@ -877,9 +877,13 @@ function drawRoad(style) {
   rows.sort((a,b) => a.screenY - b.screenY);
   for (let r = 0; r < rows.length; r++) {
     const { i, seg, screenY, roadPx, cx } = rows[r];
-    const next       = rows[r + 1] ?? null;
+    const next = rows[r + 1] ?? null;
+    if (!next) continue;  // last strip has no forward reference — car covers that area
+
+    const nCx        = next.cx;
+    const nRoadPx    = next.roadPx;
     const bandTop    = screenY;
-    const bandBottom = next ? next.screenY : H;
+    const bandBottom = next.screenY;
     const bandH      = bandBottom - bandTop;
     const absIdx     = startSeg - i;
     const isEven     = Math.floor(absIdx / 2) % 2 === 0;
@@ -888,21 +892,27 @@ function drawRoad(style) {
     ctx.fillStyle = isEven ? style.verge[0] : style.verge[1];
     ctx.fillRect(0, bandTop, W, bandH);
 
-    // Road
+    // Road surface
     ctx.fillStyle = isEven ? style.road : shadeColor(style.road, 10);
-    ctx.fillRect(Math.round(cx - roadPx), bandTop, Math.round(roadPx * 2), bandH);
+    fillTrap(cx - roadPx, bandTop, cx + roadPx, bandTop,
+             nCx + nRoadPx, bandBottom, nCx - nRoadPx, bandBottom);
 
     // Rumble strips
-    const rumbleW = Math.max(2, roadPx * 0.09);
+    const rumbleW  = Math.max(2, roadPx  * 0.09);
+    const nRumbleW = Math.max(2, nRoadPx * 0.09);
     ctx.fillStyle = isEven ? '#ffffff' : '#cc1122';
-    ctx.fillRect(Math.round(cx - roadPx - rumbleW), bandTop, Math.ceil(rumbleW), bandH);
-    ctx.fillRect(Math.round(cx + roadPx),           bandTop, Math.ceil(rumbleW), bandH);
+    fillTrap(cx  - roadPx  - rumbleW,  bandTop,    cx  - roadPx,  bandTop,
+             nCx - nRoadPx,            bandBottom, nCx - nRoadPx - nRumbleW, bandBottom);
+    fillTrap(cx  + roadPx,             bandTop,    cx  + roadPx  + rumbleW,  bandTop,
+             nCx + nRoadPx + nRumbleW, bandBottom, nCx + nRoadPx, bandBottom);
 
     // Centre stripe
     if (isEven) {
-      const dashW = Math.max(1.5, roadPx * 0.035);
+      const dashW  = Math.max(1.5, roadPx  * 0.035);
+      const nDashW = Math.max(1.5, nRoadPx * 0.035);
       ctx.fillStyle = style.stripe;
-      ctx.fillRect(Math.round(cx - dashW), bandTop, Math.ceil(dashW * 2), bandH);
+      fillTrap(cx  - dashW,  bandTop,    cx  + dashW,  bandTop,
+               nCx + nDashW, bandBottom, nCx - nDashW, bandBottom);
     }
 
     // Coins
@@ -920,6 +930,16 @@ function drawRoad(style) {
       ctx.restore();
     }
   }
+}
+
+function fillTrap(x0, y0, x1, y1, x2, y2, x3, y3) {
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.lineTo(x3, y3);
+  ctx.closePath();
+  ctx.fill();
 }
 
 
