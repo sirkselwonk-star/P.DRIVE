@@ -881,20 +881,12 @@ function drawRoad(style) {
     const absIdx = startSeg - i;
     const isEven = Math.floor(absIdx / 2) % 2 === 0;
 
-    if (!next) {
-      // Last strip: fill to canvas bottom so the car doesn't float.
-      // No rumble strips — the car covers this area.
-      ctx.fillStyle = isEven ? style.verge[0] : style.verge[1];
-      ctx.fillRect(0, screenY, W, H - screenY);
-      ctx.fillStyle = isEven ? style.road : shadeColor(style.road, 10);
-      ctx.fillRect(Math.round(cx - roadPx), screenY, Math.round(roadPx * 2), H - screenY);
-      continue;
-    }
+    if (!next) continue;
 
     const nCx        = next.cx;
     const nRoadPx    = next.roadPx;
     const bandTop    = screenY;
-    const bandBottom = next.screenY;
+    const bandBottom = rows[r + 2] ? next.screenY : H;
     const bandH      = bandBottom - bandTop;
 
     // Verge
@@ -964,7 +956,7 @@ function shadeColor(hex, pct) {
 // ── Car ───────────────────────────────────────────────────────
 function drawCar() {
   if (player.falling) return;
-  const cx = W/2, cy = H*0.82;
+  const cx = W/2, cy = H*0.75;
   const cw = 74,  ch = 34;
   const skin = CAR_SKINS[carSkin];
 
