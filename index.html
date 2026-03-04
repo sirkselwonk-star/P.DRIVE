@@ -893,18 +893,17 @@ function drawRoad(style) {
     ctx.fillRect(0, bandTop, W, bandH);
 
     // Road surface
-    ctx.fillStyle = isEven ? style.road : shadeColor(style.road, 10);
-    fillTrap(cx - roadPx, bandTop, cx + roadPx, bandTop,
-             nCx + nRoadPx, bandBottom, nCx - nRoadPx, bandBottom);
-
-    // Rumble strips
+    // Draw full road+casing width in rumble colour first, then paint road
+    // surface on top — eliminates any antialiasing gap at the shared edge.
     const rumbleW  = Math.max(2, roadPx  * 0.09);
     const nRumbleW = Math.max(2, nRoadPx * 0.09);
     ctx.fillStyle = isEven ? '#ffffff' : '#cc1122';
-    fillTrap(cx  - roadPx  - rumbleW,  bandTop,    cx  - roadPx,  bandTop,
-             nCx - nRoadPx,            bandBottom, nCx - nRoadPx - nRumbleW, bandBottom);
-    fillTrap(cx  + roadPx,             bandTop,    cx  + roadPx  + rumbleW,  bandTop,
-             nCx + nRoadPx + nRumbleW, bandBottom, nCx + nRoadPx, bandBottom);
+    fillTrap(cx  - roadPx  - rumbleW,  bandTop,    cx  + roadPx  + rumbleW,  bandTop,
+             nCx + nRoadPx + nRumbleW, bandBottom, nCx - nRoadPx - nRumbleW, bandBottom);
+
+    ctx.fillStyle = isEven ? style.road : shadeColor(style.road, 10);
+    fillTrap(cx  - roadPx, bandTop, cx  + roadPx, bandTop,
+             nCx + nRoadPx, bandBottom, nCx - nRoadPx, bandBottom);
 
     // Centre stripe
     if (isEven) {
