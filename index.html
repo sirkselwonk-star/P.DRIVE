@@ -359,10 +359,23 @@ let carSkin = 0;
 const COINS_PER_UPGRADE = 20;
 
 // ── Road Constants ────────────────────────────────────────────
-const ROAD_HALF  = 1.9;   // wide road at driver POV
+const ROAD_HALF  = 1.9;
 const DRAW_DIST  = 200;
-const HORIZON    = W > H ? 0.42 : 0.58; // raised vanishing point in landscape
-const SCROLL_DIV = 22;    // lower = faster scene motion
+// Per screen-class perspective tuning:
+//   isLandscapeTouch – phone sideways, short canvas, touch controls
+//   W > H (desktop)  – large screen, tall canvas, pointer device
+//   portrait          – phone upright
+const HORIZON     = isLandscapeTouch ? 0.42
+                  : W > H            ? 0.45
+                  :                    0.58;
+// roadViewW caps how wide the road appears at depth=1.
+// Smaller multiplier on desktop avoids the road being overwhelmingly
+// wide on a tall canvas; larger on landscape-touch compensates for
+// the compressed ground height.
+const ROAD_VIEW_W = Math.min(W, H * (isLandscapeTouch ? 1.4
+                                   : W > H            ? 0.9
+                                   :                    1.2));
+const SCROLL_DIV = 22;
 
 const LEVEL_SPEEDS = [420, 600, 800, 1050, 1350, 1600, 1900, 2250, 2650, 3100];
 
@@ -842,7 +855,7 @@ function drawRoad(style) {
   const startSeg  = Math.floor(roadOffset);
 
   const rows = [];
-  const roadViewW = Math.min(W, H * 1.2); // cap road width in landscape
+  const roadViewW = ROAD_VIEW_W;
   for (let i = 0; i < DRAW_DIST; i++) {
     const segIdx  = (startSeg + i) % segments.length;
     const depth   = i + 1 + subOffset;
