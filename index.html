@@ -25,7 +25,7 @@ body {
   color: #fff;
 }
 
-#wrapper { position: relative; }
+#wrapper { position: relative; overflow: hidden; }
 
 canvas { display: block; }
 
@@ -880,7 +880,7 @@ function drawRoad(style) {
     const bandTop    = screenY;
     const bandBottom = r+1 < rows.length ? rows[r+1].screenY : H;
     const bandH      = Math.max(1, bandBottom - bandTop);
-    const drawH      = Math.max(1, Math.ceil(bandH / 2));
+    const drawH      = Math.max(1, bandH);
     const absIdx     = startSeg - i;
     const isEven     = Math.floor(absIdx / 2) % 2 === 0;
 
