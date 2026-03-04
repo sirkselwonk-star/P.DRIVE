@@ -884,9 +884,9 @@ function drawRoad(style) {
     if (!next) {
       // Last strip: no rendered row beyond it, so extrapolate bottom corners
       // by continuing the direction from the previous row, projected to H.
-      const prev  = rows[r - 1];
-      const nCx2     = cx;
+      const prev     = rows[r - 1];
       const nRoadPx2 = roadPx + (prev ? (roadPx - prev.roadPx) * (H - screenY) / Math.max(1, screenY - prev.screenY) : 0);
+      const nCx2     = cx - player.x * (nRoadPx2 - roadPx) * 0.5;
       const bandTop2    = screenY;
       const bandH2      = H - bandTop2;
       ctx.fillStyle = isEven ? style.verge[0] : style.verge[1];
@@ -982,7 +982,7 @@ function shadeColor(hex, pct) {
 // ── Car ───────────────────────────────────────────────────────
 function drawCar() {
   if (player.falling) return;
-  const cx = W/2, cy = H*0.82;
+  const cx = W/2, cy = H*0.75;
   const cw = 74,  ch = 34;
   const skin = CAR_SKINS[carSkin];
 
