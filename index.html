@@ -878,8 +878,12 @@ function drawRoad(style) {
   for (let r = 0; r < rows.length; r++) {
     const { i, seg, screenY, roadPx, cx } = rows[r];
     const next       = rows[r + 1] ?? null;
-    const nCx        = next ? next.cx     : cx;
-    const nRoadPx    = next ? next.roadPx : roadPx;
+    const prev       = rows[r - 1] ?? null;
+    // For the last (nearest) row, extrapolate nCx/nRoadPx from the
+    // previous→current delta so the strip continues at the correct angle
+    // rather than collapsing to a 90° rectangle.
+    const nCx        = next ? next.cx     : prev ? cx     + (cx     - prev.cx)                          : cx;
+    const nRoadPx    = next ? next.roadPx : prev ? Math.max(1, roadPx + (roadPx - prev.roadPx)) : roadPx;
     const bandTop    = screenY;
     const bandBottom = next ? next.screenY : H;
     const absIdx     = startSeg - i;
