@@ -881,12 +881,38 @@ function drawRoad(style) {
     const absIdx = startSeg - i;
     const isEven = Math.floor(absIdx / 2) % 2 === 0;
 
-    if (!next) continue;
+    if (!next) {
+      // Last strip: no rendered row beyond it, so extrapolate bottom corners
+      // by continuing the direction from the previous row, projected to H.
+      const prev = rows[r - 1];
+      const nCx2     = prev ? cx     + (cx     - prev.cx)     : cx;
+      const nRoadPx2 = prev ? roadPx + (roadPx - prev.roadPx) : roadPx;
+      const bandTop2    = screenY;
+      const bandH2      = H - bandTop2;
+      ctx.fillStyle = isEven ? style.verge[0] : style.verge[1];
+      ctx.fillRect(0, bandTop2, W, bandH2);
+      const rumbleW2  = Math.max(2, roadPx  * 0.09);
+      const nRumbleW2 = Math.max(2, nRoadPx2 * 0.09);
+      ctx.fillStyle = isEven ? '#ffffff' : '#cc1122';
+      fillTrap(cx  - roadPx  - rumbleW2,  bandTop2, cx  + roadPx  + rumbleW2,  bandTop2,
+               nCx2 + nRoadPx2 + nRumbleW2, H,     nCx2 - nRoadPx2 - nRumbleW2, H);
+      ctx.fillStyle = isEven ? style.road : shadeColor(style.road, 10);
+      fillTrap(cx  - roadPx, bandTop2, cx  + roadPx, bandTop2,
+               nCx2 + nRoadPx2, H,    nCx2 - nRoadPx2, H);
+      if (isEven) {
+        const dashW2  = Math.max(1.5, roadPx  * 0.035);
+        const nDashW2 = Math.max(1.5, nRoadPx2 * 0.035);
+        ctx.fillStyle = style.stripe;
+        fillTrap(cx  - dashW2, bandTop2, cx  + dashW2, bandTop2,
+                 nCx2 + nDashW2, H,     nCx2 - nDashW2, H);
+      }
+      continue;
+    }
 
     const nCx        = next.cx;
     const nRoadPx    = next.roadPx;
     const bandTop    = screenY;
-    const bandBottom = rows[r + 2] ? next.screenY : H;
+    const bandBottom = next.screenY;
     const bandH      = bandBottom - bandTop;
 
     // Verge
@@ -956,7 +982,7 @@ function shadeColor(hex, pct) {
 // ── Car ───────────────────────────────────────────────────────
 function drawCar() {
   if (player.falling) return;
-  const cx = W/2, cy = H*0.75;
+  const cx = W/2, cy = H*0.82;
   const cw = 74,  ch = 34;
   const skin = CAR_SKINS[carSkin];
 
