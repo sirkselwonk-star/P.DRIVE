@@ -986,6 +986,14 @@ function drawCar() {
   const cw = 74,  ch = 34;
   const skin = CAR_SKINS[carSkin];
 
+  const isLandscape = W > H;
+  if (isLandscape) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(2, 2);
+    ctx.translate(-cx, -cy);
+  }
+
   // Shadow
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.beginPath();
@@ -1056,6 +1064,8 @@ function drawCar() {
     ctx.fillStyle = skin.hub;
     ctx.beginPath(); ctx.ellipse(cx+ox, cy+oy,  6, 4, 0, 0, Math.PI*2); ctx.fill();
   });
+
+  if (isLandscape) ctx.restore();
 }
 
 function drawFall() {
