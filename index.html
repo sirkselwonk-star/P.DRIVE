@@ -999,7 +999,7 @@ function drawRoad(style) {
 function drawBillboard(bb, cx, screenY, roadPx) {
   const side  = bb.side === 'R' ? 1 : -1;
   const bx    = cx + side * roadPx * 2.7;
-  const postH = roadPx * 3.0;
+  const postH = roadPx * 0.9;
   const bw    = roadPx * 2.6;
   const bh    = roadPx * 1.1;
   if (bw < 10) return;
@@ -1035,7 +1035,7 @@ function drawBillboard(bb, cx, screenY, roadPx) {
 function drawSign(sg, cx, screenY, roadPx) {
   const side  = sg.side === 'R' ? 1 : -1;
   const bx    = cx + side * roadPx * 2.1;
-  const postH = roadPx * 0.9;
+  const postH = roadPx * 0.4;
   const sw    = roadPx * 1.0;
   if (sw < 6) return;
 
