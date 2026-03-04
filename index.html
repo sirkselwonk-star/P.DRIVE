@@ -877,32 +877,39 @@ function drawRoad(style) {
   rows.sort((a,b) => a.screenY - b.screenY);
   for (let r = 0; r < rows.length; r++) {
     const { i, seg, screenY, roadPx, cx } = rows[r];
+    const next       = rows[r + 1] ?? null;
+    const nCx        = next ? next.cx     : cx;
+    const nRoadPx    = next ? next.roadPx : roadPx;
     const bandTop    = screenY;
-    const bandBottom = r+1 < rows.length ? rows[r+1].screenY : H;
-    const bandH      = Math.max(1, bandBottom - bandTop);
-    const drawH      = Math.max(1, bandH);
+    const bandBottom = next ? next.screenY : H;
     const absIdx     = startSeg - i;
     const isEven     = Math.floor(absIdx / 2) % 2 === 0;
 
-    // Verge
+    // Verge — full-width rect is fine (extends to screen edges)
     ctx.fillStyle = isEven ? style.verge[0] : style.verge[1];
-    ctx.fillRect(0, bandTop, W, drawH);
+    ctx.fillRect(0, bandTop, W, bandBottom - bandTop);
 
-    // Road
+    // Road surface (trapezoid connecting to next row)
     ctx.fillStyle = isEven ? style.road : shadeColor(style.road, 10);
-    ctx.fillRect(Math.round(cx - roadPx), bandTop, Math.round(roadPx*2), drawH);
+    fillTrap(cx - roadPx, bandTop, cx + roadPx, bandTop,
+             nCx + nRoadPx, bandBottom, nCx - nRoadPx, bandBottom);
 
     // Rumble strips
-    const rumbleW = Math.max(2, roadPx * 0.09);
+    const rumbleW  = Math.max(2, roadPx  * 0.09);
+    const nRumbleW = Math.max(2, nRoadPx * 0.09);
     ctx.fillStyle = isEven ? '#ffffff' : '#cc1122';
-    ctx.fillRect(Math.round(cx - roadPx - rumbleW), bandTop, Math.ceil(rumbleW), drawH);
-    ctx.fillRect(Math.round(cx + roadPx),           bandTop, Math.ceil(rumbleW), drawH);
+    fillTrap(cx  - roadPx  - rumbleW,  bandTop,    cx  - roadPx,  bandTop,
+             nCx - nRoadPx,            bandBottom, nCx - nRoadPx - nRumbleW, bandBottom);
+    fillTrap(cx  + roadPx,             bandTop,    cx  + roadPx  + rumbleW,  bandTop,
+             nCx + nRoadPx + nRumbleW, bandBottom, nCx + nRoadPx, bandBottom);
 
     // Centre stripe
     if (isEven) {
-      const dashW = Math.max(1.5, roadPx * 0.035);
+      const dashW  = Math.max(1.5, roadPx  * 0.035);
+      const nDashW = Math.max(1.5, nRoadPx * 0.035);
       ctx.fillStyle = style.stripe;
-      ctx.fillRect(Math.round(cx - dashW), bandTop, Math.ceil(dashW*2), drawH);
+      fillTrap(cx  - dashW,  bandTop,    cx  + dashW,  bandTop,
+               nCx + nDashW, bandBottom, nCx - nDashW, bandBottom);
     }
 
     // Coins
@@ -920,6 +927,16 @@ function drawRoad(style) {
       ctx.restore();
     }
   }
+}
+
+function fillTrap(x0, y0, x1, y1, x2, y2, x3, y3) {
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.lineTo(x3, y3);
+  ctx.closePath();
+  ctx.fill();
 }
 
 function shadeColor(hex, pct) {
