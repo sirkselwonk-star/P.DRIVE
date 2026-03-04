@@ -386,9 +386,31 @@ let player = { x:0, speed:0, falling:false, fallY:0, fallVY:0 };
 let segments = [], roadOffset = 0;
 let dashTextX = -1;
 
+const BILLBOARD_DATA = [
+  { line1:'HODL 4EVER',    line2:'NEVER SELL'    },
+  { line1:'BUY THE DIP',   line2:'OR GET REKT'   },
+  { line1:'TO THE MOON',   line2:'NEXT EXIT →'   },
+  { line1:'DIAMOND HANDS', line2:'ONLY WAY UP'   },
+  { line1:'WHEN LAMBO?',   line2:'SOON™'         },
+  { line1:'NOT FINANCIAL', line2:'ADVICE'        },
+  { line1:'STAKE & EARN',  line2:'APY: ∞%'      },
+  { line1:'REKT AHEAD',    line2:'U WERE WARNED' },
+  { line1:'DO YOUR OWN',   line2:'RESEARCH'      },
+  { line1:'GAS: LOW',      line2:'TIME TO TX'    },
+];
+const SIGN_DATA = [
+  { type:'warn', line1:'WHALE', line2:'ZONE'   },
+  { type:'info', line1:'YIELD', line2:'MINERS' },
+  { type:'warn', line1:'HIGH',  line2:'GAS'    },
+  { type:'info', line1:'EXIT',  line2:'LAMBO'  },
+  { type:'warn', line1:'REKT',  line2:'AHEAD'  },
+  { type:'info', line1:'HODL',  line2:'4EVER'  },
+];
+
 function buildRoad() {
   segments = [];
   const total = Math.ceil(levelDistance * 10) + DRAW_DIST;
+  let bbIdx = 0, signIdx = 0;
   for (let i = 0; i < total; i++) {
     const phase = Math.floor(i / 35) % 4;
     const curve = [
@@ -397,7 +419,15 @@ function buildRoad() {
        Math.sin(i * 0.09) *  0.008,
       -Math.sin(i * 0.06) *  0.014,
     ][phase];
-    segments.push({ curve, coin: i > 20 && i % 17 === 0 });
+    let billboard = null, sign = null;
+    if (i > 40 && i % 180 === 0) {
+      billboard = { ...BILLBOARD_DATA[bbIdx % BILLBOARD_DATA.length], side: bbIdx % 2 === 0 ? 'R' : 'L' };
+      bbIdx++;
+    } else if (i > 40 && i % 70 === 0) {
+      sign = { ...SIGN_DATA[signIdx % SIGN_DATA.length], side: signIdx % 2 === 0 ? 'L' : 'R' };
+      signIdx++;
+    }
+    segments.push({ curve, coin: i > 20 && i % 17 === 0, billboard, sign });
   }
 }
 
@@ -954,6 +984,102 @@ function drawRoad(style) {
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText('₱', cx, coinY);
       ctx.restore();
+    }
+  }
+
+  // Second pass: roadside objects (far→near, already sorted)
+  for (let r = 0; r < rows.length; r++) {
+    const { seg, screenY, roadPx, cx } = rows[r];
+    if (roadPx < 5) continue;
+    if (seg.billboard) drawBillboard(seg.billboard, cx, screenY, roadPx);
+    if (seg.sign)      drawSign(seg.sign, cx, screenY, roadPx);
+  }
+}
+
+function drawBillboard(bb, cx, screenY, roadPx) {
+  const side  = bb.side === 'R' ? 1 : -1;
+  const bx    = cx + side * roadPx * 2.7;
+  const postH = roadPx * 3.0;
+  const bw    = roadPx * 2.6;
+  const bh    = roadPx * 1.1;
+  if (bw < 10) return;
+
+  const postW = Math.max(2, roadPx * 0.13);
+  ctx.fillStyle = '#777777';
+  ctx.fillRect(bx - bw * 0.28 - postW / 2, screenY - postH, postW, postH);
+  ctx.fillRect(bx + bw * 0.28 - postW / 2, screenY - postH, postW, postH);
+
+  ctx.fillStyle = '#0d0d0d';
+  ctx.fillRect(bx - bw / 2, screenY - postH - bh, bw, bh);
+  ctx.strokeStyle = '#FFD700';
+  ctx.lineWidth = Math.max(1.5, roadPx * 0.09);
+  ctx.strokeRect(bx - bw / 2, screenY - postH - bh, bw, bh);
+
+  if (bw > 18) {
+    ctx.save();
+    ctx.rect(bx - bw / 2 + 1, screenY - postH - bh + 1, bw - 2, bh - 2);
+    ctx.clip();
+    const fs1 = Math.max(6, roadPx * 0.30);
+    ctx.fillStyle = '#FFD700';
+    ctx.font = `bold ${fs1}px Orbitron`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(bb.line1, bx, screenY - postH - bh * 0.65);
+    const fs2 = Math.max(5, roadPx * 0.20);
+    ctx.fillStyle = '#cccccc';
+    ctx.font = `${fs2}px 'Share Tech Mono', monospace`;
+    ctx.fillText(bb.line2, bx, screenY - postH - bh * 0.25);
+    ctx.restore();
+  }
+}
+
+function drawSign(sg, cx, screenY, roadPx) {
+  const side  = sg.side === 'R' ? 1 : -1;
+  const bx    = cx + side * roadPx * 2.1;
+  const postH = roadPx * 2.0;
+  const sw    = roadPx * 1.0;
+  if (sw < 6) return;
+
+  const postW = Math.max(1.5, roadPx * 0.09);
+  ctx.fillStyle = '#999999';
+  ctx.fillRect(bx - postW / 2, screenY - postH, postW, postH);
+
+  const top = screenY - postH - sw * 0.75;
+  if (sg.type === 'warn') {
+    // Yellow diamond
+    ctx.save();
+    ctx.translate(bx, top + sw * 0.375);
+    ctx.rotate(Math.PI / 4);
+    const hs = sw * 0.38;
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(-hs, -hs, hs * 2, hs * 2);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = Math.max(1, roadPx * 0.05);
+    ctx.strokeRect(-hs, -hs, hs * 2, hs * 2);
+    ctx.restore();
+    if (sw > 12) {
+      ctx.save();
+      const fs = Math.max(4, sw * 0.18);
+      ctx.fillStyle = '#000000';
+      ctx.font = `bold ${fs}px Orbitron`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(sg.line1, bx, top + sw * 0.28);
+      ctx.fillText(sg.line2, bx, top + sw * 0.50);
+      ctx.restore();
+    }
+  } else {
+    // Green rectangle info sign
+    ctx.fillStyle = '#006633';
+    ctx.fillRect(bx - sw / 2, top, sw, sw * 0.75);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = Math.max(1, roadPx * 0.05);
+    ctx.strokeRect(bx - sw / 2, top, sw, sw * 0.75);
+    if (sw > 12) {
+      const fs = Math.max(4, sw * 0.18);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${fs}px Orbitron`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(sg.line1, bx, top + sw * 0.27);
+      ctx.fillText(sg.line2, bx, top + sw * 0.55);
     }
   }
 }
