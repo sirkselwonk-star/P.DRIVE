@@ -1105,6 +1105,53 @@ function shadeColor(hex, pct) {
   return `rgb(${Math.min(255,Math.max(0,(n>>16)+pct))},${Math.min(255,Math.max(0,((n>>8)&0xff)+pct))},${Math.min(255,Math.max(0,(n&0xff)+pct))})`;
 }
 
+// ── Exhaust plume ─────────────────────────────────────────────
+function drawExhaust(cx, cy, cw, ch) {
+  const maxSpeed = LEVEL_SPEEDS[Math.min(level - 1, LEVEL_SPEEDS.length - 1)];
+  const sr = Math.max(0, player.speed / maxSpeed); // speed ratio 0..1
+  if (sr < 0.04) return;
+
+  const t = performance.now() * 0.001;
+  // Two pipe mouths just inside the tail-light positions
+  const pipes = [cx - cw * 0.28, cx + cw * 0.28];
+  const rearY = cy + ch / 2;
+
+  pipes.forEach(px => {
+    // Draw puffs from oldest (back) to newest (front) so newer ones overlap
+    for (let i = 5; i >= 0; i--) {
+      const prog = ((t * 2.8 + i * 0.26) % 1); // 0 = fresh at pipe, 1 = dissipated
+      const py    = rearY + 3 + prog * 34 * sr;
+      const drift = Math.sin(t * 2.1 + i * 1.4 + px) * 2.8 * prog;
+      const r     = 2.2 + prog * 8 * sr;
+      const alpha = (1 - prog) * 0.62 * sr;
+
+      let fill;
+      if (prog < 0.28 && sr > 0.55) {
+        // Flame / heat at pipe mouth – colour shifts with speed
+        if (sr > 0.88) {
+          fill = 'rgba(190,230,255,1)';          // blue-white jet flame
+        } else {
+          const heat = (sr - 0.55) / 0.33;
+          const g = Math.floor(200 - 140 * heat);
+          fill = `rgba(255,${g},20,1)`;           // orange → yellow
+        }
+      } else {
+        // Smoke – lightens and expands as it drifts back
+        const gray = Math.floor(110 + 110 * prog);
+        fill = `rgba(${gray},${gray},${gray},1)`;
+      }
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      ctx.arc(px + drift, py, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  });
+}
+
 // ── Car ───────────────────────────────────────────────────────
 function drawCar() {
   if (player.falling) return;
@@ -1119,6 +1166,9 @@ function drawCar() {
     ctx.scale(2, 2);
     ctx.translate(-cx, -cy);
   }
+
+  // Exhaust plume (behind car body)
+  drawExhaust(cx, cy, cw, ch);
 
   // Shadow
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
