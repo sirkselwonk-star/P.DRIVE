@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>REKT Racer</title>
+<title>SLIME RACER</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
 
@@ -30,16 +30,16 @@ body {
 canvas { display: block; }
 
 #dashCanvas {
-  border: 2px solid #FFD700;
-  border-top: 1px solid #3a2e00;
+  border: 2px solid #39FF14;
+  border-top: 1px solid #0a3a00;
   background: #080808;
-  box-shadow: 0 0 48px #FFD70066, 0 0 100px #FFD70022;
+  box-shadow: 0 0 48px #39FF1466, 0 0 100px #39FF1422;
 }
 
 #gameCanvas {
-  border: 2px solid #FFD700;
+  border: 2px solid #39FF14;
   border-bottom: none;
-  box-shadow: 0 0 48px #FFD70066, 0 0 100px #FFD70022;
+  box-shadow: 0 0 48px #39FF1466, 0 0 100px #39FF1422;
 }
 
 /* ── Overlay ── */
@@ -58,8 +58,8 @@ canvas { display: block; }
     to bottom,
     transparent,
     transparent 3px,
-    rgba(255,215,0,0.018) 3px,
-    rgba(255,215,0,0.018) 4px
+    rgba(57,255,20,0.018) 3px,
+    rgba(57,255,20,0.018) 4px
   );
 }
 
@@ -76,7 +76,7 @@ canvas { display: block; }
 #overlay h1 {
   font-size: clamp(26px, 10vw, 52px);
   font-weight: 900;
-  color: #FFD700;
+  color: #39FF14;
   letter-spacing: clamp(3px, 1.5vw, 8px);
   line-height: 1;
   white-space: nowrap;
@@ -84,15 +84,15 @@ canvas { display: block; }
 }
 
 @keyframes titlePulse {
-  0%, 100% { text-shadow: 0 0 20px #FFD700aa, 0 0 60px #FFD70044; }
-  50%       { text-shadow: 0 0 35px #FFD700cc, 0 0 90px #FFD70077, 0 0 130px #FFD70022; }
+  0%, 100% { text-shadow: 0 0 20px #39FF14aa, 0 0 60px #39FF1444; }
+  50%       { text-shadow: 0 0 35px #39FF14cc, 0 0 90px #39FF1477, 0 0 130px #39FF1422; }
 }
 
 #overlay .drive-label {
   font-family: 'Share Tech Mono', monospace;
   font-size: clamp(9px, 2.5vw, 13px);
   letter-spacing: clamp(4px, 1.5vw, 10px);
-  color: rgba(255,215,0,0.5);
+  color: rgba(57,255,20,0.5);
   text-align: center;
   white-space: pre-line;
   line-height: 1.7;
@@ -101,7 +101,7 @@ canvas { display: block; }
 #overlay .divider {
   width: 140px;
   height: 1px;
-  background: linear-gradient(to right, transparent, #FFD700, transparent);
+  background: linear-gradient(to right, transparent, #39FF14, transparent);
   margin: 2px 0;
 }
 
@@ -115,8 +115,8 @@ canvas { display: block; }
 #overlay button {
   margin-top: 12px;
   background: transparent;
-  color: #FFD700;
-  border: 1.5px solid #FFD700;
+  color: #39FF14;
+  border: 1.5px solid #39FF14;
   padding: 13px 48px;
   font-family: 'Orbitron', sans-serif;
   font-size: 12px;
@@ -133,13 +133,13 @@ canvas { display: block; }
   content: '';
   position: absolute;
   inset: 0;
-  background: #FFD700;
+  background: #39FF14;
   transform: translateX(-101%);
   transition: transform 0.18s ease;
   z-index: -1;
 }
 
-#overlay button:hover { color: #000; box-shadow: 0 0 28px #FFD70088; }
+#overlay button:hover { color: #000; box-shadow: 0 0 28px #39FF1488; }
 #overlay button:hover::before { transform: translateX(0); }
 
 /* ── Controls hint ── */
@@ -151,11 +151,11 @@ canvas { display: block; }
   font-family: 'Share Tech Mono', monospace;
   font-size: 9px;
   letter-spacing: 3px;
-  color: rgba(255,215,0,0.22);
+  color: rgba(57,255,20,0.22);
   pointer-events: none;
   z-index: 10;
   white-space: nowrap;
-  border: 1px solid rgba(255,215,0,0.1);
+  border: 1px solid rgba(57,255,20,0.1);
   padding: 4px 14px;
 }
 
@@ -182,23 +182,23 @@ canvas { display: block; }
 #joystick-base {
   width: 96px; height: 96px;
   background: rgba(0,0,0,0.65);
-  border: 1.5px solid rgba(255,215,0,0.35);
+  border: 1.5px solid rgba(57,255,20,0.35);
   border-radius: 50%;
   position: relative;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
-  box-shadow: 0 0 20px rgba(255,215,0,0.08), inset 0 0 20px rgba(0,0,0,0.5);
+  box-shadow: 0 0 20px rgba(57,255,20,0.08), inset 0 0 20px rgba(0,0,0,0.5);
 }
 
 #joystick-knob {
   width: 40px; height: 40px;
-  background: radial-gradient(circle at 38% 32%, #ffe566, #b8860b 70%, #7a5800);
+  background: radial-gradient(circle at 38% 32%, #88ff66, #1a8a0b 70%, #0a5800);
   border-radius: 50%;
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.7), 0 0 14px rgba(255,215,0,0.3);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.7), 0 0 14px rgba(57,255,20,0.3);
   pointer-events: none;
 }
 
@@ -208,7 +208,7 @@ canvas { display: block; }
   width: 100%; text-align: center;
   top: 50%; transform: translateY(-50%);
   font-size: 8px;
-  color: rgba(255,215,0,0.18);
+  color: rgba(57,255,20,0.18);
   letter-spacing: 26px;
   pointer-events: none;
   padding-left: 4px;
@@ -229,7 +229,7 @@ canvas { display: block; }
 .gas-btn {
   width: 62px; height: 62px;
   background: rgba(0,0,0,0.75);
-  border: 1.5px solid #FFD700;
+  border: 1.5px solid #39FF14;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -238,7 +238,7 @@ canvas { display: block; }
   font-family: 'Orbitron', sans-serif;
   font-weight: 700;
   letter-spacing: 1px;
-  color: #FFD700;
+  color: #39FF14;
   user-select: none;
   -webkit-user-select: none;
   touch-action: none;
@@ -270,10 +270,10 @@ canvas { display: block; }
 
   <div id="overlay">
     <div class="eyebrow">WELCOME TO</div>
-    <h1>REKT Racer</h1>
+    <h1>SLIME RACER</h1>
     <div class="drive-label">S T A R T &nbsp; Y O U R&#10;E N G I N E</div>
     <div class="divider"></div>
-    <div class="msg" id="overlayMsg">SURVIVE 5 LEVELS TO WIN</div>
+    <div class="msg" id="overlayMsg">RACE TO THE FINISH — HIT CHECKPOINTS FOR MORE TIME</div>
     <button id="startBtn">START ENGINE</button>
   </div>
 
@@ -332,20 +332,29 @@ let state = 'menu', level = 1, coins = 0;
 let distanceTravelled = 0;
 const levelDistance = 12000;
 
+// ── Timer / Checkpoint System ────────────────────────────────
+const START_TIME       = 30;    // seconds at race start
+const CHECKPOINT_BONUS = 12;    // seconds added per checkpoint
+const NUM_CHECKPOINTS  = 4;     // checkpoints per level (evenly spaced)
+let raceTimer          = START_TIME;
+let checkpointsPassed  = 0;
+let nextCheckpointDist = 0;     // distance of next checkpoint
+let checkpointFlashT   = 0;     // countdown for checkpoint flash overlay
+
 // ── Car Skins (20 combos: body, roof top, roof bottom, stripe, wheel hub) ──
 const CAR_SKINS = [
-  { body:'#141414', roofA:'#FFE033', roofB:'#b8860b', stripe:'#FFD700', hub:'#555',  name:'GOLD STANDARD'   },
+  { body:'#0a1a0a', roofA:'#39FF14', roofB:'#1a8a0a', stripe:'#39FF14', hub:'#363',  name:'SLIME STANDARD'  },
   { body:'#0a0a2a', roofA:'#4488ff', roofB:'#1133bb', stripe:'#88ccff', hub:'#336',  name:'MIDNIGHT BLUE'   },
   { body:'#1a0000', roofA:'#ff3311', roofB:'#aa1100', stripe:'#ff6644', hub:'#633',  name:'CRIMSON DEVIL'   },
-  { body:'#001a00', roofA:'#00ff88', roofB:'#008844', stripe:'#66ffbb', hub:'#363',  name:'VENOM GREEN'     },
+  { body:'#001a00', roofA:'#00ff88', roofB:'#008844', stripe:'#66ffbb', hub:'#363',  name:'TOXIC GREEN'     },
   { body:'#1a001a', roofA:'#cc44ff', roofB:'#880099', stripe:'#ee88ff', hub:'#636',  name:'ULTRAVIOLET'     },
-  { body:'#f0f0f0', roofA:'#ffffff', roofB:'#cccccc', stripe:'#FFD700', hub:'#aaa',  name:'ARCTIC WHITE'    },
+  { body:'#f0f0f0', roofA:'#ffffff', roofB:'#cccccc', stripe:'#39FF14', hub:'#aaa',  name:'ARCTIC WHITE'    },
   { body:'#0d0d0d', roofA:'#ff9900', roofB:'#cc6600', stripe:'#ffcc44', hub:'#753',  name:'INFERNO ORANGE'  },
   { body:'#001030', roofA:'#00eeff', roofB:'#0099bb', stripe:'#88ffff', hub:'#059',  name:'NEON CYAN'       },
   { body:'#2a1a00', roofA:'#ffdd88', roofB:'#cc9900', stripe:'#ffe4aa', hub:'#864',  name:'SAND STORM'      },
   { body:'#0a0a0a', roofA:'#ff0055', roofB:'#aa0033', stripe:'#ff4488', hub:'#533',  name:'HOT PINK'        },
   { body:'#101020', roofA:'#aaaaff', roofB:'#6666cc', stripe:'#ccccff', hub:'#446',  name:'GALAXY SILVER'   },
-  { body:'#1a1000', roofA:'#44ff00', roofB:'#22aa00', stripe:'#88ff44', hub:'#363',  name:'ACID LIME'       },
+  { body:'#0a1400', roofA:'#66ff22', roofB:'#33bb00', stripe:'#88ff44', hub:'#363',  name:'ACID LIME'       },
   { body:'#200010', roofA:'#ff6600', roofB:'#cc3300', stripe:'#ffaa44', hub:'#743',  name:'LAVA FLOW'       },
   { body:'#000818', roofA:'#00ffcc', roofB:'#00aaaa', stripe:'#88ffee', hub:'#057',  name:'DEEP TEAL'       },
   { body:'#18000a', roofA:'#ff44cc', roofB:'#cc0099', stripe:'#ff99ee', hub:'#636',  name:'CANDY MAGENTA'   },
@@ -387,24 +396,24 @@ let segments = [], roadOffset = 0;
 let dashTextX = -1;
 
 const BILLBOARD_DATA = [
-  { line1:'HODL 4EVER',    line2:'NEVER SELL'    },
-  { line1:'BUY THE DIP',   line2:'OR GET REKT'   },
-  { line1:'TO THE MOON',   line2:'NEXT EXIT →'   },
-  { line1:'DIAMOND HANDS', line2:'ONLY WAY UP'   },
-  { line1:'WHEN LAMBO?',   line2:'SOON™'         },
-  { line1:'NOT FINANCIAL', line2:'ADVICE'        },
-  { line1:'STAKE & EARN',  line2:'APY: ∞%'      },
-  { line1:'REKT AHEAD',    line2:'U WERE WARNED' },
-  { line1:'DO YOUR OWN',   line2:'RESEARCH'      },
-  { line1:'GAS: LOW',      line2:'TIME TO TX'    },
+  { line1:'SLIME RACER',   line2:'ARCADE GP'     },
+  { line1:'FULL THROTTLE', line2:'NO BRAKES'     },
+  { line1:'PIT STOP',      line2:'NEXT EXIT →'   },
+  { line1:'TURBO BOOST',   line2:'ENGAGE NOW'    },
+  { line1:'FASTEST LAP',   line2:'CAN YOU BEAT?' },
+  { line1:'CHECKPOINT',    line2:'AHEAD!'        },
+  { line1:'SLIME TIME',    line2:'LETS GOOO'     },
+  { line1:'DANGER ZONE',   line2:'STAY ON TRACK' },
+  { line1:'RACE HARDER',   line2:'DRIVE FASTER'  },
+  { line1:'FINISH LINE',   line2:'NOT FAR NOW'   },
 ];
 const SIGN_DATA = [
-  { type:'warn', line1:'WHALE', line2:'ZONE'   },
-  { type:'info', line1:'YIELD', line2:'MINERS' },
-  { type:'warn', line1:'HIGH',  line2:'GAS'    },
-  { type:'info', line1:'EXIT',  line2:'LAMBO'  },
-  { type:'warn', line1:'REKT',  line2:'AHEAD'  },
-  { type:'info', line1:'HODL',  line2:'4EVER'  },
+  { type:'warn', line1:'SHARP', line2:'TURN'   },
+  { type:'info', line1:'PIT',   line2:'LANE'   },
+  { type:'warn', line1:'SLOW',  line2:'DOWN'   },
+  { type:'info', line1:'CHKPT', line2:'AHEAD'  },
+  { type:'warn', line1:'CAUTION', line2:'!'    },
+  { type:'info', line1:'PUSH',  line2:'IT!'    },
 ];
 
 function buildRoad() {
@@ -433,16 +442,16 @@ function buildRoad() {
 
 // ── Art Palettes ──────────────────────────────────────────────
 const artStyles = [
-  { name:'GENESIS BLOCK', sky:['#000000','#0a0a0a','#111111'], road:'#1a1a1a', verge:['#0a0a0a','#111111'], stripe:'#FFD700',  fog:'#111111', stars:true  },
-  { name:'BULL RUN',      sky:['#0a0500','#1a0c00','#3a2000'], road:'#2a1800', verge:['#1a0e00','#251400'], stripe:'#ff9900',  fog:'#2a1200', stars:false },
-  { name:'ALTCOIN',       sky:['#000510','#001030','#002050'], road:'#1a1a2e', verge:['#0a0a18','#050510'], stripe:'#00e5ff',  fog:'#001535', stars:true  },
-  { name:'FLASH CRASH',   sky:['#0d0000','#2a0000','#600000'], road:'#2a1010', verge:['#1a0505','#3a0808'], stripe:'#ff4400',  fog:'#3a0000', stars:false },
-  { name:'SYNTHWAVE',     sky:['#0d001a','#2a0050','#6600aa'], road:'#1a0030', verge:['#0d0020','#1a0040'], stripe:'#ff00ff',  fog:'#330066', stars:true  },
-  { name:'CRYPTO GREEN',  sky:['#000a00','#001a00','#003300'], road:'#0a1a0a', verge:['#001000','#002200'], stripe:'#00ff41',  fog:'#001a00', stars:true  },
-  { name:'BEAR MARKET',   sky:['#0a0005','#1a0010','#3a0025'], road:'#1a0a15', verge:['#0d0510','#180a1a'], stripe:'#cc00ff',  fog:'#1a0015', stars:true  },
-  { name:'LIQUIDATION',   sky:['#0a0500','#1f0a00','#3d1400'], road:'#1a0f00', verge:['#0f0800','#1a1000'], stripe:'#ff6600',  fog:'#2a0e00', stars:false },
-  { name:'ICE WALLET',    sky:['#000a10','#001830','#003060'], road:'#0a1520', verge:['#050d15','#0a1820'], stripe:'#88eeff',  fog:'#001535', stars:true  },
-  { name:'MOON SHOT',     sky:['#000000','#050010','#0a0025'], road:'#080010', verge:['#040008','#080015'], stripe:'#ffffff',  fog:'#050015', stars:true  },
+  { name:'GRAND PRIX',     sky:['#2288ee','#55aaff','#88ccff'], road:'#555555', verge:['#228833','#33aa44'], stripe:'#ffffff',  fog:'#aaccee', stars:false },
+  { name:'SUMMER CIRCUIT', sky:['#0077dd','#3399ee','#66bbff'], road:'#4a4a4a', verge:['#1a7733','#2d9944'], stripe:'#ffff00',  fog:'#99bbdd', stars:false },
+  { name:'COASTAL RUN',    sky:['#33aaee','#66ccff','#aaddff'], road:'#505050', verge:['#228844','#44aa55'], stripe:'#ffffff',  fog:'#bbddee', stars:false },
+  { name:'MOUNTAIN PASS',  sky:['#4488cc','#6699dd','#88bbee'], road:'#484848', verge:['#1a6633','#2d8844'], stripe:'#ffcc00',  fog:'#8899aa', stars:false },
+  { name:'SUNSET STRIP',   sky:['#cc4400','#ff8833','#ffcc66'], road:'#4a4a4a', verge:['#336622','#448833'], stripe:'#ffffff',  fog:'#ffaa55', stars:false },
+  { name:'NIGHT RACE',     sky:['#000022','#001144','#002266'], road:'#2a2a2a', verge:['#0a2210','#112a18'], stripe:'#39FF14',  fog:'#001133', stars:true  },
+  { name:'TROPICAL GP',    sky:['#00bbdd','#44ddee','#88eeff'], road:'#585858', verge:['#22aa44','#44cc55'], stripe:'#ffffff',  fog:'#aaeeff', stars:false },
+  { name:'AUTUMN CLASSIC', sky:['#cc8833','#ddaa55','#eeccaa'], road:'#4c4c4c', verge:['#886622','#aa8833'], stripe:'#ffffff',  fog:'#ccaa77', stars:false },
+  { name:'THUNDER ROAD',   sky:['#445566','#667788','#889999'], road:'#404040', verge:['#334422','#445533'], stripe:'#ffff00',  fog:'#556677', stars:false },
+  { name:'FINAL LAP',      sky:['#1166bb','#3388dd','#55aaff'], road:'#525252', verge:['#1a7733','#33aa44'], stripe:'#39FF14',  fog:'#88aacc', stars:false },
 ];
 function getStyle() { return artStyles[(level-1) % artStyles.length]; }
 
@@ -555,7 +564,7 @@ function spawnExplosion() {
       rotV: (Math.random()-0.5) * 18,
       w: 4 + Math.random() * 12,
       h: 3 + Math.random() * 8,
-      color: ['#FFD700','#FF4400','#FF8800','#FF2200','#FFAA00'][Math.floor(Math.random()*5)],
+      color: ['#39FF14','#FF4400','#FF8800','#FF2200','#FFAA00'][Math.floor(Math.random()*5)],
       life: 1.0,
       gravity: 600 + Math.random() * 200,
     });
@@ -794,6 +803,20 @@ function update(dt) {
   distanceTravelled += player.speed * dt;
   roadOffset        += player.speed * dt / SCROLL_DIV;
 
+  // Timer countdown
+  raceTimer -= dt;
+  if (checkpointFlashT > 0) checkpointFlashT -= dt;
+  if (raceTimer <= 0) { raceTimer = 0; showTimeUp(); return; }
+
+  // Checkpoint detection
+  if (checkpointsPassed < NUM_CHECKPOINTS && distanceTravelled >= nextCheckpointDist) {
+    checkpointsPassed++;
+    raceTimer += CHECKPOINT_BONUS;
+    nextCheckpointDist = levelDistance * (checkpointsPassed + 1) / (NUM_CHECKPOINTS + 1);
+    checkpointFlashT = 1.5;
+    playCoinSound();
+  }
+
   // Coin pick-up
   const cIdx = (Math.floor(roadOffset + 6) % segments.length + segments.length) % segments.length;
   if (segments[cIdx]?.coin && Math.abs(player.x) < 0.65) {
@@ -825,6 +848,9 @@ function update(dt) {
     if (level >= 10) { showWin(); return; }
     level++;
     distanceTravelled = 0;
+    raceTimer += CHECKPOINT_BONUS; // bonus time for finishing a level
+    checkpointsPassed = 0;
+    nextCheckpointDist = levelDistance / (NUM_CHECKPOINTS + 1);
     buildRoad();
     roadOffset = 0;
     showLevelUp();
@@ -843,7 +869,44 @@ function draw() {
     drawParticles();
     drawExplosion();
     if (player.falling) drawFall();
+    drawTimer();
+    if (checkpointFlashT > 0) drawCheckpointFlash();
   }
+}
+
+function drawTimer() {
+  const secs = Math.ceil(raceTimer);
+  const txt = secs < 10 ? '0' + secs : '' + secs;
+  const urgent = raceTimer <= 5;
+  ctx.save();
+  ctx.font = 'bold 36px Orbitron';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = urgent ? '#ff2222' : '#ffffff';
+  ctx.shadowColor = urgent ? '#ff0000' : '#000000';
+  ctx.shadowBlur = urgent ? 16 : 6;
+  if (urgent) ctx.globalAlpha = 0.6 + Math.sin(performance.now() * 0.012) * 0.4;
+  ctx.fillText(txt, W / 2, 12);
+  ctx.shadowBlur = 0;
+  ctx.font = '10px Orbitron';
+  ctx.fillStyle = urgent ? '#ff6666' : '#cccccc';
+  ctx.globalAlpha = 1;
+  ctx.fillText('TIME', W / 2, 50);
+  ctx.restore();
+}
+
+function drawCheckpointFlash() {
+  const a = Math.min(checkpointFlashT / 0.5, 1);
+  ctx.save();
+  ctx.globalAlpha = a;
+  ctx.font = 'bold 28px Orbitron';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#39FF14';
+  ctx.shadowColor = '#39FF14';
+  ctx.shadowBlur = 20;
+  ctx.fillText('CHECKPOINT +' + CHECKPOINT_BONUS + 's', W / 2, H * 0.18);
+  ctx.restore();
 }
 
 function drawSky(style) {
@@ -976,8 +1039,8 @@ function drawRoad(style) {
       const coinR = Math.max(4, roadPx * 0.11);
       const coinY = bandTop - coinR * 1.5;
       ctx.save();
-      ctx.fillStyle = '#FFD700';
-      ctx.shadowColor = '#FFD700'; ctx.shadowBlur = 14;
+      ctx.fillStyle = '#39FF14';
+      ctx.shadowColor = '#39FF14'; ctx.shadowBlur = 14;
       ctx.beginPath(); ctx.arc(cx, coinY, coinR, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = '#000';
       ctx.font = `bold ${Math.max(6, Math.floor(coinR))}px Orbitron`;
@@ -1011,7 +1074,7 @@ function drawBillboard(bb, cx, screenY, roadPx) {
 
   ctx.fillStyle = '#0d0d0d';
   ctx.fillRect(bx - bw / 2, screenY - postH - bh, bw, bh);
-  ctx.strokeStyle = '#FFD700';
+  ctx.strokeStyle = '#39FF14';
   ctx.lineWidth = Math.max(1.5, roadPx * 0.09);
   ctx.strokeRect(bx - bw / 2, screenY - postH - bh, bw, bh);
 
@@ -1020,7 +1083,7 @@ function drawBillboard(bb, cx, screenY, roadPx) {
     ctx.rect(bx - bw / 2 + 1, screenY - postH - bh + 1, bw - 2, bh - 2);
     ctx.clip();
     const fs1 = Math.max(6, roadPx * 0.30);
-    ctx.fillStyle = '#FFD700';
+    ctx.fillStyle = '#39FF14';
     ctx.font = `bold ${fs1}px Orbitron`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(bb.line1, bx, screenY - postH - bh * 0.65);
@@ -1050,7 +1113,7 @@ function drawSign(sg, cx, screenY, roadPx) {
     ctx.translate(bx, top + sw * 0.375);
     ctx.rotate(Math.PI / 4);
     const hs = sw * 0.38;
-    ctx.fillStyle = '#FFD700';
+    ctx.fillStyle = '#39FF14';
     ctx.fillRect(-hs, -hs, hs * 2, hs * 2);
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = Math.max(1, roadPx * 0.05);
@@ -1253,7 +1316,7 @@ function drawFall() {
   ctx.scale(s, s);
   ctx.fillStyle = '#141414';
   ctx.beginPath(); ctx.roundRect(-37,-17,74,34,8); ctx.fill();
-  ctx.fillStyle = '#FFD700';
+  ctx.fillStyle = '#39FF14';
   ctx.beginPath(); ctx.roundRect(-20,-34,40,18,5); ctx.fill();
   ctx.restore();
 
@@ -1262,10 +1325,10 @@ function drawFall() {
     ctx.fillRect((i*197 + player.fallY*0.55) % W, (i*113 + player.fallY*1.25) % H, 1.5, 1.5);
   }
 
-  ctx.fillStyle = '#FFD700';
+  ctx.fillStyle = '#39FF14';
   ctx.font = 'bold 22px Orbitron';
   ctx.textAlign = 'center';
-  ctx.shadowColor = '#FFD700'; ctx.shadowBlur = 20;
+  ctx.shadowColor = '#39FF14'; ctx.shadowBlur = 20;
   ctx.fillText('FELL OFF THE ROAD', W/2, H*0.28);
   ctx.shadowBlur = 0;
 }
@@ -1274,8 +1337,8 @@ function drawParticles() {
   particles.forEach(p => {
     ctx.save();
     ctx.globalAlpha = Math.min(p.life * 2, 1);
-    ctx.fillStyle = '#FFD700';
-    ctx.shadowColor = '#FFD700'; ctx.shadowBlur = 8;
+    ctx.fillStyle = '#39FF14';
+    ctx.shadowColor = '#39FF14'; ctx.shadowBlur = 8;
     ctx.font = 'bold 13px Orbitron';
     ctx.textAlign = 'center';
     ctx.fillText('₱', p.x, p.y);
@@ -1292,12 +1355,12 @@ function drawDashboard() {
   dctx.fillStyle = bg; dctx.fillRect(0, 0, DW, DH);
 
   dctx.beginPath(); dctx.moveTo(0, DH-1); dctx.lineTo(DW, DH-1);
-  dctx.strokeStyle = 'rgba(255,215,0,0.2)'; dctx.lineWidth = 1; dctx.stroke();
+  dctx.strokeStyle = 'rgba(57,255,20,0.2)'; dctx.lineWidth = 1; dctx.stroke();
 
   // Zone dividers separating dial pairs from scrolling centre
   const cx0 = Math.round(DW * 0.32);
   const cx1 = Math.round(DW * 0.68);
-  dctx.strokeStyle = 'rgba(255,215,0,0.22)'; dctx.lineWidth = 1;
+  dctx.strokeStyle = 'rgba(57,255,20,0.22)'; dctx.lineWidth = 1;
   dctx.beginPath(); dctx.moveTo(cx0, 5); dctx.lineTo(cx0, DH-5); dctx.stroke();
   dctx.beginPath(); dctx.moveTo(cx1, 5); dctx.lineTo(cx1, DH-5); dctx.stroke();
 
@@ -1313,17 +1376,17 @@ function drawDashboard() {
     dctx.save();
     dctx.beginPath(); dctx.rect(cx0, 0, cx1 - cx0, DH); dctx.clip();
     dctx.textAlign = 'center'; dctx.textBaseline = 'middle';
-    dctx.shadowColor = '#FFD700'; dctx.shadowBlur = 20;
-    dctx.fillStyle = '#FFD700';
+    dctx.shadowColor = '#39FF14'; dctx.shadowBlur = 20;
+    dctx.fillStyle = '#39FF14';
     dctx.fillText(txt, dashTextX, DH / 2);
     dctx.restore();
   }
 
   const dials = [
     { x:DW*0.07, label:'SPEED', value:Math.min(player.speed,420), max:420,   isSpeed:true  },
-    { x:DW*0.22, label:'LEVEL', value:level,                      max:5,     isSpeed:false },
+    { x:DW*0.22, label:'LEVEL', value:level,                      max:10,    isSpeed:false },
     { x:DW*0.78, label:'COINS', value:coins,                      max:50,    isSpeed:false },
-    { x:DW*0.93, label:'DIST',  value:Math.min(distanceTravelled,12000), max:12000, isSpeed:false },
+    { x:DW*0.93, label:'CHKPT', value:checkpointsPassed,          max:NUM_CHECKPOINTS, isSpeed:false },
   ];
   dials.forEach(d => drawDial(d.x, DH*0.5, 17, d));
 }
@@ -1336,19 +1399,19 @@ function drawDial(cx, cy, r, info) {
   const arcSpan    = Math.PI * 1.5;
   const colour     = atMax       ? '#00ff44'
                    : pct > 0.8   ? '#ff4422'
-                   : pct > 0.5   ? '#FFD700'
+                   : pct > 0.5   ? '#39FF14'
                    :                '#00ccbb';
   c.save();
 
   // Outer glow ring
   c.beginPath(); c.arc(cx, cy, r+4, 0, Math.PI*2);
-  c.strokeStyle = atMax ? 'rgba(0,255,68,0.22)' : 'rgba(255,215,0,0.09)';
+  c.strokeStyle = atMax ? 'rgba(0,255,68,0.22)' : 'rgba(57,255,20,0.09)';
   c.lineWidth = 4; c.stroke();
 
   // Face
   c.beginPath(); c.arc(cx, cy, r, 0, Math.PI*2);
   c.fillStyle = '#0c0c0c'; c.fill();
-  c.strokeStyle = atMax ? '#00ff44' : '#FFD700'; c.lineWidth = 1.5; c.stroke();
+  c.strokeStyle = atMax ? '#00ff44' : '#39FF14'; c.lineWidth = 1.5; c.stroke();
 
   // Background track
   c.beginPath(); c.arc(cx, cy, r-5, startAngle, startAngle+arcSpan);
@@ -1377,7 +1440,7 @@ function drawDial(cx, cy, r, info) {
   c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.lineCap = 'round'; c.stroke();
 
   // Centre pip
-  c.beginPath(); c.arc(cx, cy, 2.5, 0, Math.PI*2); c.fillStyle = '#FFD700'; c.fill();
+  c.beginPath(); c.arc(cx, cy, 2.5, 0, Math.PI*2); c.fillStyle = '#39FF14'; c.fill();
 
   if (atMax) {
     c.save();
@@ -1391,15 +1454,15 @@ function drawDial(cx, cy, r, info) {
   } else {
     c.font = `bold ${info.isSpeed?9:8}px Share Tech Mono`;
     c.textAlign='center'; c.textBaseline='middle'; c.fillStyle=colour;
-    const display = info.isSpeed        ? Math.floor(info.value)
-                  : info.label==='DIST'  ? Math.floor(info.value)+'m'
-                  : info.label==='LEVEL' ? info.value+'/5'
+    const display = info.isSpeed         ? Math.floor(info.value)
+                  : info.label==='CHKPT' ? info.value+'/'+NUM_CHECKPOINTS
+                  : info.label==='LEVEL' ? info.value+'/10'
                   : info.value;
     c.fillText(display, cx, cy+16);
   }
 
   c.font='7px Orbitron'; c.textAlign='center'; c.textBaseline='middle';
-  c.fillStyle='rgba(255,215,0,0.38)';
+  c.fillStyle='rgba(57,255,20,0.38)';
   c.fillText(info.label, cx, cy+r+7);
   c.restore();
 }
@@ -1424,11 +1487,12 @@ function drawLeaf(c) {
 function startGame() {
   state='playing'; level=1; coins=0; distanceTravelled=0; carSkin=0;
   player={ x:0, speed:0, falling:false, fallY:0, fallVY:0 };
+  raceTimer=START_TIME; checkpointsPassed=0; nextCheckpointDist=levelDistance/(NUM_CHECKPOINTS+1); checkpointFlashT=0;
   buildRoad(); roadOffset=0; particles=[]; explodeParticles=[];
   const ov=document.getElementById('overlay');
   ov.querySelector('.eyebrow').style.visibility='visible';
   ov.querySelector('.drive-label').style.visibility='visible';
-  ov.querySelector('h1').textContent='REKT Racer';
+  ov.querySelector('h1').textContent='SLIME RACER';
   ov.style.display='none';
   showLevelUp();
 }
@@ -1444,6 +1508,17 @@ function showDead() {
   document.getElementById('startBtn').textContent='RETRY';
 }
 
+function showTimeUp() {
+  state='dead';
+  const ov=document.getElementById('overlay');
+  ov.style.display='flex';
+  ov.querySelector('h1').textContent='TIME UP!';
+  ov.querySelector('.eyebrow').style.visibility='hidden';
+  ov.querySelector('.drive-label').style.visibility='hidden';
+  document.getElementById('overlayMsg').textContent=`LEVEL ${level} — COLLECTED ${coins} COINS`;
+  document.getElementById('startBtn').textContent='RETRY';
+}
+
 function showWin() {
   state='win';
   const ov=document.getElementById('overlay');
@@ -1451,7 +1526,7 @@ function showWin() {
   ov.querySelector('h1').textContent='YOU WIN';
   ov.querySelector('.eyebrow').style.visibility='hidden';
   ov.querySelector('.drive-label').style.visibility='hidden';
-  document.getElementById('overlayMsg').textContent=`${coins} COINS COLLECTED — PRIZE INCOMING...`;
+  document.getElementById('overlayMsg').textContent=`${coins} COINS COLLECTED — RACE COMPLETE!`;
   document.getElementById('startBtn').textContent='PLAY AGAIN';
 }
 
@@ -1494,8 +1569,8 @@ function showLevelUp() {
     opacity:0;
   `;
   flash.innerHTML=`
-    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:5px;color:rgba(255,215,0,0.6)">LEVEL ${level}</div>
-    <div style="font-family:'Orbitron',sans-serif;font-size:clamp(22px,6vw,36px);font-weight:900;color:#FFD700;letter-spacing:6px;text-shadow:0 0 40px #FFD700,0 0 80px #FFD70055;white-space:nowrap">${style.name}</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:5px;color:rgba(57,255,20,0.6)">LEVEL ${level}</div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:clamp(22px,6vw,36px);font-weight:900;color:#39FF14;letter-spacing:6px;text-shadow:0 0 40px #39FF14,0 0 80px #39FF1455;white-space:nowrap">${style.name}</div>
   `;
   document.getElementById('wrapper').appendChild(flash);
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
