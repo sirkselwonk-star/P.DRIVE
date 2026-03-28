@@ -436,15 +436,15 @@ function buildRoad() {
     } else if (i > 40 && i % 70 === 0) {
       sign = { ...SIGN_DATA[signIdx % SIGN_DATA.length], side: signIdx % 2 === 0 ? 'L' : 'R' };
       signIdx++;
-    } else if (i > 10 && i % 8 === 0) {
+    } else if (i > 10 && i % 4 === 0) {
       // Alternate between tree sections and tire pile sections
       const section = Math.floor(i / 120) % 3; // 0=trees, 1=tires, 2=trees
-      if (section === 1) {
-        // Tire piles
+      if (section === 1 && i % 8 === 0) {
+        // Tire piles (every 8 in tire sections)
         tires = { side: tiresIdx % 2 === 0 ? 'R' : 'L', count: 2 + (tiresIdx % 3) };
         tiresIdx++;
-      } else {
-        // Trees
+      } else if (section !== 1) {
+        // Trees — variety: 0=round, 1=pine, 2=bush, 3=wide oak
         tree = { side: treeIdx % 3 === 0 ? 'B' : (treeIdx % 2 === 0 ? 'R' : 'L'), variant: treeIdx % 4 };
         treeIdx++;
       }
@@ -1165,38 +1165,83 @@ function drawSign(sg, cx, screenY, roadPx) {
 
 function drawTree(tr, cx, screenY, roadPx, style) {
   const sides = tr.side === 'B' ? [1, -1] : [tr.side === 'R' ? 1 : -1];
+  const baseGreen = style.verge[0];
+  const lightGreen = style.verge[1];
+  const darkGreen = shadeColor(baseGreen, -25);
+
   sides.forEach(side => {
-    const tx = cx + side * roadPx * (2.2 + (tr.variant % 3) * 0.4);
-    const trunkH = roadPx * 0.7;
-    const trunkW = Math.max(2, roadPx * 0.12);
-    const canopyR = roadPx * 0.5;
-    if (canopyR < 2) return;
+    const tx = cx + side * roadPx * (2.2 + (tr.variant % 3) * 0.35);
+    const v = tr.variant;
 
-    // Trunk
-    ctx.fillStyle = '#665533';
-    ctx.fillRect(tx - trunkW / 2, screenY - trunkH, trunkW, trunkH);
+    if (v === 0) {
+      // Round bushy tree
+      const trunkH = roadPx * 0.65;
+      const trunkW = Math.max(2, roadPx * 0.13);
+      const cr = roadPx * 0.5;
+      if (cr < 2) return;
+      ctx.fillStyle = '#665533';
+      ctx.fillRect(tx - trunkW / 2, screenY - trunkH, trunkW, trunkH);
+      const cy = screenY - trunkH - cr * 0.4;
+      ctx.fillStyle = baseGreen;
+      ctx.beginPath(); ctx.arc(tx, cy, cr, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = lightGreen;
+      ctx.beginPath(); ctx.arc(tx - cr * 0.25, cy - cr * 0.2, cr * 0.6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = darkGreen;
+      ctx.beginPath(); ctx.arc(tx + cr * 0.3, cy + cr * 0.25, cr * 0.45, 0, Math.PI * 2); ctx.fill();
 
-    // Canopy — layered circles for fullness
-    const baseGreen = style.verge[0];
-    const lightGreen = style.verge[1];
-    const canopyY = screenY - trunkH - canopyR * 0.5;
+    } else if (v === 1) {
+      // Tall pine / conifer — triangle layers
+      const trunkH = roadPx * 0.9;
+      const trunkW = Math.max(2, roadPx * 0.10);
+      const treeW = roadPx * 0.45;
+      if (treeW < 2) return;
+      ctx.fillStyle = '#554422';
+      ctx.fillRect(tx - trunkW / 2, screenY - trunkH * 0.35, trunkW, trunkH * 0.35);
+      // Three stacked triangles
+      for (let layer = 0; layer < 3; layer++) {
+        const ly = screenY - trunkH * 0.3 - layer * trunkH * 0.25;
+        const lw = treeW * (1 - layer * 0.2);
+        ctx.fillStyle = layer === 0 ? darkGreen : layer === 1 ? baseGreen : lightGreen;
+        ctx.beginPath();
+        ctx.moveTo(tx, ly - trunkH * 0.35);
+        ctx.lineTo(tx + lw, ly);
+        ctx.lineTo(tx - lw, ly);
+        ctx.closePath();
+        ctx.fill();
+      }
 
-    ctx.fillStyle = baseGreen;
-    ctx.beginPath();
-    ctx.arc(tx, canopyY, canopyR, 0, Math.PI * 2);
-    ctx.fill();
+    } else if (v === 2) {
+      // Small bush — low and wide, no trunk
+      const bw = roadPx * 0.4;
+      const bh = roadPx * 0.25;
+      if (bw < 2) return;
+      const by = screenY - bh * 0.6;
+      ctx.fillStyle = darkGreen;
+      ctx.beginPath(); ctx.ellipse(tx, by, bw, bh, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = baseGreen;
+      ctx.beginPath(); ctx.ellipse(tx - bw * 0.15, by - bh * 0.2, bw * 0.75, bh * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = lightGreen;
+      ctx.beginPath(); ctx.ellipse(tx - bw * 0.2, by - bh * 0.3, bw * 0.4, bh * 0.4, 0, 0, Math.PI * 2); ctx.fill();
 
-    // Highlight blob (upper-left)
-    ctx.fillStyle = lightGreen;
-    ctx.beginPath();
-    ctx.arc(tx - canopyR * 0.25, canopyY - canopyR * 0.2, canopyR * 0.65, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Dark shadow blob (lower-right)
-    ctx.fillStyle = shadeColor(baseGreen, -20);
-    ctx.beginPath();
-    ctx.arc(tx + canopyR * 0.3, canopyY + canopyR * 0.25, canopyR * 0.5, 0, Math.PI * 2);
-    ctx.fill();
+    } else {
+      // Wide oak — thick trunk, broad canopy
+      const trunkH = roadPx * 0.55;
+      const trunkW = Math.max(3, roadPx * 0.18);
+      const cr = roadPx * 0.65;
+      if (cr < 2) return;
+      ctx.fillStyle = '#5a4428';
+      ctx.fillRect(tx - trunkW / 2, screenY - trunkH, trunkW, trunkH);
+      const cy = screenY - trunkH - cr * 0.3;
+      // Wide canopy — three overlapping circles
+      ctx.fillStyle = darkGreen;
+      ctx.beginPath(); ctx.arc(tx + cr * 0.4, cy + cr * 0.1, cr * 0.55, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = baseGreen;
+      ctx.beginPath(); ctx.arc(tx - cr * 0.3, cy, cr * 0.6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = lightGreen;
+      ctx.beginPath(); ctx.arc(tx + cr * 0.05, cy - cr * 0.15, cr * 0.65, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = baseGreen;
+      ctx.beginPath(); ctx.arc(tx + cr * 0.35, cy - cr * 0.05, cr * 0.5, 0, Math.PI * 2); ctx.fill();
+    }
   });
 }
 
