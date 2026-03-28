@@ -420,7 +420,7 @@ function buildRoad() {
   segments = [];
   const total = Math.ceil(levelDistance * 10) + DRAW_DIST;
   let bbIdx = 0, signIdx = 0;
-  let treeIdx = 0, tiresIdx = 0;
+  let treeIdx = 0, tiresIdx = 0, buildIdx = 0;
   for (let i = 0; i < total; i++) {
     const phase = Math.floor(i / 35) % 4;
     const curve = [
@@ -432,12 +432,12 @@ function buildRoad() {
     // Hill elevation — overlapping sine waves for varied terrain
     const hillPhase = Math.floor(i / 50) % 4;
     const hill = [
-       Math.sin(i * 0.04) *  0.024,
-      -Math.sin(i * 0.06) *  0.030,
-       Math.sin(i * 0.03) *  0.035,
-      -Math.sin(i * 0.05) *  0.020,
+       Math.sin(i * 0.04) *  0.030,
+      -Math.sin(i * 0.06) *  0.038,
+       Math.sin(i * 0.03) *  0.044,
+      -Math.sin(i * 0.05) *  0.026,
     ][hillPhase];
-    let billboard = null, sign = null, tree = null, tires = null;
+    let billboard = null, sign = null, tree = null, tires = null, building = null;
     if (i > 40 && i % 180 === 0) {
       billboard = { ...BILLBOARD_DATA[bbIdx % BILLBOARD_DATA.length], side: bbIdx % 2 === 0 ? 'R' : 'L' };
       bbIdx++;
@@ -445,19 +445,23 @@ function buildRoad() {
       sign = { ...SIGN_DATA[signIdx % SIGN_DATA.length], side: signIdx % 2 === 0 ? 'L' : 'R' };
       signIdx++;
     } else if (i > 10 && i % 2 === 0) {
-      // Alternate between tree sections and tire pile sections
-      const section = Math.floor(i / 120) % 3; // 0=trees, 1=tires, 2=trees
+      // Cycle: trees / tires / trees / buildings
+      const section = Math.floor(i / 120) % 4;
       if (section === 1 && i % 8 === 0) {
-        // Tire piles (every 8 in tire sections)
+        // Tire piles
         tires = { side: tiresIdx % 2 === 0 ? 'R' : 'L', count: 2 + (tiresIdx % 3) };
         tiresIdx++;
-      } else if (section !== 1) {
-        // Trees — mostly both sides, variety: 0=round, 1=pine, 2=bush, 3=wide oak
+      } else if (section === 3 && i % 6 === 0) {
+        // Buildings
+        building = { side: buildIdx % 3 === 0 ? 'B' : (buildIdx % 2 === 0 ? 'R' : 'L'), variant: buildIdx % 5 };
+        buildIdx++;
+      } else if (section === 0 || section === 2) {
+        // Trees
         tree = { side: treeIdx % 5 === 0 ? (treeIdx % 2 === 0 ? 'R' : 'L') : 'B', variant: treeIdx % 4 };
         treeIdx++;
       }
     }
-    segments.push({ curve, hill, coin: i > 20 && i % 17 === 0, billboard, sign, tree, tires });
+    segments.push({ curve, hill, coin: i > 20 && i % 17 === 0, billboard, sign, tree, tires, building });
   }
 }
 
@@ -1034,7 +1038,7 @@ function drawRoad(style) {
     const segIdx  = (startSeg + i) % segments.length;
     const seg     = segments[segIdx];
     const depth   = i + 1.5 + subOffset;
-    hillY += (seg.hill || 0) * (DRAW_DIST - i) * 4.5;
+    hillY += (seg.hill || 0) * (DRAW_DIST - i) * 5.5;
     const baseY   = Math.round(H - groundH * (1 - 1/depth));
     const screenY = Math.round(baseY + hillY / depth);
     const roadPx  = (ROAD_HALF * roadViewW * 0.5) / depth;
@@ -1140,6 +1144,7 @@ function drawRoad(style) {
     if (roadPx < 3) continue;
     if (seg.tree)      drawTree(seg.tree, cx, screenY, roadPx, style);
     if (seg.tires)     drawTirePile(seg.tires, cx, screenY, roadPx);
+    if (seg.building)  drawBuilding(seg.building, cx, screenY, roadPx);
     if (roadPx < 5) continue;
     if (seg.billboard) drawBillboard(seg.billboard, cx, screenY, roadPx);
     if (seg.sign)      drawSign(seg.sign, cx, screenY, roadPx);
@@ -1352,6 +1357,67 @@ function drawTirePile(tp, cx, screenY, roadPx) {
       ctx.fill();
     }
   }
+}
+
+function drawBuilding(bd, cx, screenY, roadPx) {
+  const sides = bd.side === 'B' ? [1, -1] : [bd.side === 'R' ? 1 : -1];
+  const v = bd.variant;
+
+  // Building palette by variant
+  const palettes = [
+    { wall:'#8888aa', shade:'#666688', roof:'#cc4444', win:'#aaddff', winLit:'#ffee88' },
+    { wall:'#bbaa88', shade:'#998866', roof:'#885533', win:'#88ccee', winLit:'#ffdd66' },
+    { wall:'#999999', shade:'#777777', roof:'#556677', win:'#aaccdd', winLit:'#ffcc44' },
+    { wall:'#aa9988', shade:'#887766', roof:'#cc6633', win:'#99bbcc', winLit:'#ffffaa' },
+    { wall:'#7799aa', shade:'#557788', roof:'#445566', win:'#bbddee', winLit:'#ffee77' },
+  ];
+  const pal = palettes[v % palettes.length];
+
+  sides.forEach(side => {
+    const bx = cx + side * roadPx * (2.3 + (v % 3) * 0.3);
+    // Heights vary by variant
+    const heights = [1.6, 2.2, 1.2, 1.8, 2.6];
+    const bh = roadPx * heights[v % 5];
+    const bw = roadPx * 0.9;
+    if (bw < 4) return;
+
+    const top = screenY - bh;
+
+    // Main wall
+    ctx.fillStyle = pal.wall;
+    ctx.fillRect(bx - bw / 2, top, bw, bh);
+
+    // Shaded side edge (gives 3D look)
+    ctx.fillStyle = pal.shade;
+    ctx.fillRect(bx - bw / 2, top, bw * 0.15, bh);
+
+    // Roof
+    ctx.fillStyle = pal.roof;
+    ctx.fillRect(bx - bw / 2 - bw * 0.05, top - bh * 0.06, bw * 1.1, bh * 0.08);
+
+    // Windows — grid
+    if (bw > 8) {
+      const cols = Math.min(3, Math.max(1, Math.floor(bw / 8)));
+      const rows = Math.min(5, Math.max(1, Math.floor(bh / (roadPx * 0.35))));
+      const winW = bw * 0.16;
+      const winH = bh * 0.08;
+      const gapX = (bw * 0.7) / (cols + 1);
+      const gapY = (bh * 0.85) / (rows + 1);
+      const startX = bx - bw * 0.35;
+      const startY = top + bh * 0.1;
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const wx = startX + gapX * (c + 1) - winW / 2;
+          const wy = startY + gapY * (r + 1) - winH / 2;
+          // Some windows lit, some dark
+          const lit = ((v + r * 3 + c * 7) % 5) < 2;
+          ctx.fillStyle = lit ? pal.winLit : pal.win;
+          ctx.fillRect(wx, wy, winW, winH);
+        }
+      }
+    }
+  });
 }
 
 function fillTrap(x0, y0, x1, y1, x2, y2, x3, y3) {
