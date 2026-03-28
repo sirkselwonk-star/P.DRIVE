@@ -436,7 +436,7 @@ function buildRoad() {
     } else if (i > 40 && i % 70 === 0) {
       sign = { ...SIGN_DATA[signIdx % SIGN_DATA.length], side: signIdx % 2 === 0 ? 'L' : 'R' };
       signIdx++;
-    } else if (i > 10 && i % 4 === 0) {
+    } else if (i > 10 && i % 2 === 0) {
       // Alternate between tree sections and tire pile sections
       const section = Math.floor(i / 120) % 3; // 0=trees, 1=tires, 2=trees
       if (section === 1 && i % 8 === 0) {
@@ -444,8 +444,8 @@ function buildRoad() {
         tires = { side: tiresIdx % 2 === 0 ? 'R' : 'L', count: 2 + (tiresIdx % 3) };
         tiresIdx++;
       } else if (section !== 1) {
-        // Trees — variety: 0=round, 1=pine, 2=bush, 3=wide oak
-        tree = { side: treeIdx % 3 === 0 ? 'B' : (treeIdx % 2 === 0 ? 'R' : 'L'), variant: treeIdx % 4 };
+        // Trees — mostly both sides, variety: 0=round, 1=pine, 2=bush, 3=wide oak
+        tree = { side: treeIdx % 5 === 0 ? (treeIdx % 2 === 0 ? 'R' : 'L') : 'B', variant: treeIdx % 4 };
         treeIdx++;
       }
     }
@@ -938,12 +938,70 @@ function drawSky(style) {
     }
   }
 
+  // Mountains — two layers (far + near) with parallax
+  drawMountains(horizonY, style);
+
   // Horizon haze
   const haze = ctx.createLinearGradient(0, horizonY-24, 0, horizonY);
   haze.addColorStop(0, 'transparent');
   haze.addColorStop(1, style.fog + 'aa');
   ctx.fillStyle = haze;
   ctx.fillRect(0, horizonY-24, W, 24);
+}
+
+function drawMountains(horizonY, style) {
+  // Seeded pseudo-random for consistent mountain shapes per level
+  const seed = (level * 7) + 13;
+  function seededRand(n) { return ((Math.sin(n * 127.1 + seed * 311.7) * 43758.5453) % 1 + 1) % 1; }
+
+  // Far mountains — lighter, taller, slower parallax
+  const farScroll = (roadOffset * 0.15) % W;
+  ctx.fillStyle = shadeColor(style.fog, -10);
+  ctx.beginPath();
+  ctx.moveTo(0, horizonY);
+  for (let x = -40; x <= W + 40; x += 20) {
+    const wx = x + farScroll;
+    const peak = seededRand(Math.floor(wx / 120)) * 0.35 + 0.15;
+    const localH = horizonY * peak;
+    const xInPeak = (wx % 120) / 120;
+    const env = Math.sin(xInPeak * Math.PI);
+    ctx.lineTo(x, horizonY - localH * env);
+  }
+  ctx.lineTo(W + 40, horizonY);
+  ctx.closePath();
+  ctx.fill();
+
+  // Near mountains — darker, shorter, faster parallax
+  const nearScroll = (roadOffset * 0.35) % W;
+  ctx.fillStyle = shadeColor(style.fog, -25);
+  ctx.beginPath();
+  ctx.moveTo(0, horizonY);
+  for (let x = -40; x <= W + 40; x += 14) {
+    const wx = x + nearScroll;
+    const peak = seededRand(Math.floor(wx / 80) + 500) * 0.22 + 0.08;
+    const localH = horizonY * peak;
+    const xInPeak = (wx % 80) / 80;
+    const env = Math.sin(xInPeak * Math.PI);
+    ctx.lineTo(x, horizonY - localH * env);
+  }
+  ctx.lineTo(W + 40, horizonY);
+  ctx.closePath();
+  ctx.fill();
+
+  // Tree line along near mountain base — small jagged silhouettes
+  const treeScroll = (roadOffset * 0.4) % W;
+  ctx.fillStyle = shadeColor(style.verge[0], -30);
+  ctx.beginPath();
+  ctx.moveTo(0, horizonY);
+  for (let x = -10; x <= W + 10; x += 6) {
+    const wx = x + treeScroll;
+    const h = (seededRand(Math.floor(wx / 6) + 1000) * 10 + 4);
+    ctx.lineTo(x, horizonY - h);
+    ctx.lineTo(x + 3, horizonY - h * 0.5);
+  }
+  ctx.lineTo(W + 10, horizonY);
+  ctx.closePath();
+  ctx.fill();
 }
 
 function drawRoad(style) {
