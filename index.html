@@ -420,6 +420,7 @@ function buildRoad() {
   segments = [];
   const total = Math.ceil(levelDistance * 10) + DRAW_DIST;
   let bbIdx = 0, signIdx = 0;
+  let treeIdx = 0, tiresIdx = 0;
   for (let i = 0; i < total; i++) {
     const phase = Math.floor(i / 35) % 4;
     const curve = [
@@ -428,15 +429,27 @@ function buildRoad() {
        Math.sin(i * 0.09) *  0.008,
       -Math.sin(i * 0.06) *  0.014,
     ][phase];
-    let billboard = null, sign = null;
+    let billboard = null, sign = null, tree = null, tires = null;
     if (i > 40 && i % 180 === 0) {
       billboard = { ...BILLBOARD_DATA[bbIdx % BILLBOARD_DATA.length], side: bbIdx % 2 === 0 ? 'R' : 'L' };
       bbIdx++;
     } else if (i > 40 && i % 70 === 0) {
       sign = { ...SIGN_DATA[signIdx % SIGN_DATA.length], side: signIdx % 2 === 0 ? 'L' : 'R' };
       signIdx++;
+    } else if (i > 10 && i % 8 === 0) {
+      // Alternate between tree sections and tire pile sections
+      const section = Math.floor(i / 120) % 3; // 0=trees, 1=tires, 2=trees
+      if (section === 1) {
+        // Tire piles
+        tires = { side: tiresIdx % 2 === 0 ? 'R' : 'L', count: 2 + (tiresIdx % 3) };
+        tiresIdx++;
+      } else {
+        // Trees
+        tree = { side: treeIdx % 3 === 0 ? 'B' : (treeIdx % 2 === 0 ? 'R' : 'L'), variant: treeIdx % 4 };
+        treeIdx++;
+      }
     }
-    segments.push({ curve, coin: i > 20 && i % 17 === 0, billboard, sign });
+    segments.push({ curve, coin: i > 20 && i % 17 === 0, billboard, sign, tree, tires });
   }
 }
 
@@ -1053,6 +1066,9 @@ function drawRoad(style) {
   // Second pass: roadside objects (far→near, already sorted)
   for (let r = 0; r < rows.length; r++) {
     const { seg, screenY, roadPx, cx } = rows[r];
+    if (roadPx < 3) continue;
+    if (seg.tree)      drawTree(seg.tree, cx, screenY, roadPx, style);
+    if (seg.tires)     drawTirePile(seg.tires, cx, screenY, roadPx);
     if (roadPx < 5) continue;
     if (seg.billboard) drawBillboard(seg.billboard, cx, screenY, roadPx);
     if (seg.sign)      drawSign(seg.sign, cx, screenY, roadPx);
@@ -1143,6 +1159,81 @@ function drawSign(sg, cx, screenY, roadPx) {
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(sg.line1, bx, top + sw * 0.27);
       ctx.fillText(sg.line2, bx, top + sw * 0.55);
+    }
+  }
+}
+
+function drawTree(tr, cx, screenY, roadPx, style) {
+  const sides = tr.side === 'B' ? [1, -1] : [tr.side === 'R' ? 1 : -1];
+  sides.forEach(side => {
+    const tx = cx + side * roadPx * (2.2 + (tr.variant % 3) * 0.4);
+    const trunkH = roadPx * 0.7;
+    const trunkW = Math.max(2, roadPx * 0.12);
+    const canopyR = roadPx * 0.5;
+    if (canopyR < 2) return;
+
+    // Trunk
+    ctx.fillStyle = '#665533';
+    ctx.fillRect(tx - trunkW / 2, screenY - trunkH, trunkW, trunkH);
+
+    // Canopy — layered circles for fullness
+    const baseGreen = style.verge[0];
+    const lightGreen = style.verge[1];
+    const canopyY = screenY - trunkH - canopyR * 0.5;
+
+    ctx.fillStyle = baseGreen;
+    ctx.beginPath();
+    ctx.arc(tx, canopyY, canopyR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Highlight blob (upper-left)
+    ctx.fillStyle = lightGreen;
+    ctx.beginPath();
+    ctx.arc(tx - canopyR * 0.25, canopyY - canopyR * 0.2, canopyR * 0.65, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Dark shadow blob (lower-right)
+    ctx.fillStyle = shadeColor(baseGreen, -20);
+    ctx.beginPath();
+    ctx.arc(tx + canopyR * 0.3, canopyY + canopyR * 0.25, canopyR * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+function drawTirePile(tp, cx, screenY, roadPx) {
+  const side = tp.side === 'R' ? 1 : -1;
+  const baseX = cx + side * roadPx * 2.1;
+  const tireR = Math.max(2, roadPx * 0.14);
+  if (tireR < 2) return;
+  const count = tp.count;
+
+  // Bottom row
+  for (let c = 0; c < count; c++) {
+    const tx = baseX + (c - (count - 1) / 2) * tireR * 1.8;
+    // Outer tire (dark rubber)
+    ctx.fillStyle = '#333333';
+    ctx.beginPath();
+    ctx.ellipse(tx, screenY - tireR, tireR, tireR * 0.7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Inner hub
+    ctx.fillStyle = '#555555';
+    ctx.beginPath();
+    ctx.ellipse(tx, screenY - tireR, tireR * 0.5, tireR * 0.35, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Top row (one fewer tire, stacked on top)
+  if (count > 1) {
+    for (let c = 0; c < count - 1; c++) {
+      const tx = baseX + (c - (count - 2) / 2) * tireR * 1.8;
+      const ty = screenY - tireR * 2.2;
+      ctx.fillStyle = '#2a2a2a';
+      ctx.beginPath();
+      ctx.ellipse(tx, ty, tireR, tireR * 0.7, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#4a4a4a';
+      ctx.beginPath();
+      ctx.ellipse(tx, ty, tireR * 0.5, tireR * 0.35, 0, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
 }
