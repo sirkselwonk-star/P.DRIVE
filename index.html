@@ -1264,8 +1264,9 @@ function drawCliff(cl, cx, screenY, roadPx, style) {
     const cliffW = roadPx * 1.4;
     if (cliffW < 2) return;
 
-    // Cliff always extends from road to top of screen
-    const top = -10; // above canvas top
+    // Cliff extends from road up to the horizon line (screen height at camera)
+    const horizonY = H * HORIZON;
+    const top = Math.max(horizonY, screenY - H * 0.9);
     const fullH = screenY - top;
 
     // Main rock wall — full height rectangle with jagged inner edge
@@ -1627,7 +1628,7 @@ function drawCar() {
   if (isLandscape) {
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.scale(2, 2);
+    ctx.scale(2, 1.7);       // slightly squash vertically for forward tilt
     ctx.translate(-cx, -cy);
   }
 
