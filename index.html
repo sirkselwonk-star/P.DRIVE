@@ -330,11 +330,11 @@ window.addEventListener('orientationchange', () => setTimeout(() => location.rel
 // ── Game State ────────────────────────────────────────────────
 let state = 'menu', level = 1, coins = 0;
 let distanceTravelled = 0;
-const levelDistance = 12000;
+const levelDistance = 50000;
 
 // ── Timer / Checkpoint System ────────────────────────────────
-const START_TIME       = 30;    // seconds at race start
-const CHECKPOINT_BONUS = 12;    // seconds added per checkpoint
+const START_TIME       = 45;    // seconds at race start
+const CHECKPOINT_BONUS = 25;    // seconds added per checkpoint
 const NUM_CHECKPOINTS  = 4;     // checkpoints per level (evenly spaced)
 let raceTimer          = START_TIME;
 let checkpointsPassed  = 0;
@@ -418,7 +418,7 @@ const SIGN_DATA = [
 
 function buildRoad() {
   segments = [];
-  const total = Math.ceil(levelDistance * 10) + DRAW_DIST;
+  const total = Math.ceil(levelDistance / SCROLL_DIV) + DRAW_DIST;
   let bbIdx = 0, signIdx = 0;
   let treeIdx = 0, tiresIdx = 0, buildIdx = 0;
   // Pre-compute checkpoint segment indices
