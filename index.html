@@ -833,6 +833,7 @@ function update(dt) {
   // Road curve drift (gentle, always steerable against)
   const segIdx = (Math.floor(roadOffset) % segments.length + segments.length) % segments.length;
   player.x -= (segments[segIdx]?.curve || 0) * player.speed * dt * 0.28;
+  player.hillSlope = segments[segIdx]?.hill || 0;
 
   // Progress
   distanceTravelled += player.speed * dt;
@@ -1632,6 +1633,8 @@ function drawCar() {
     ctx.translate(-cx, -cy);
   }
 
+  // Hill pitch: tilt car up/down based on road slope
+  const hillPitch = (player.hillSlope || 0) * -18; // negative hill = nose down
   // Yaw: rotate nose into the curve direction
   // Lean: shift body outward (opposite to steer) simulating body roll
   const steerVal = player.steer || 0;
@@ -1640,7 +1643,7 @@ function drawCar() {
   const leanPx   = -steerVal * 2 * speedFrac;    // lean only when moving
   ctx.save();
   ctx.translate(cx + leanPx, cy);
-  ctx.rotate(yawAngle);
+  ctx.rotate(yawAngle + hillPitch);
   ctx.translate(-cx - leanPx, -cy);
 
   // Exhaust plume (behind car body)
