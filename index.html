@@ -451,9 +451,9 @@ function buildRoad() {
         // Tire piles
         tires = { side: tiresIdx % 2 === 0 ? 'R' : 'L', count: 2 + (tiresIdx % 3) };
         tiresIdx++;
-      } else if (section === 3 && i % 6 === 0) {
-        // Buildings
-        building = { side: buildIdx % 3 === 0 ? 'B' : (buildIdx % 2 === 0 ? 'R' : 'L'), variant: buildIdx % 5 };
+      } else if (section === 3) {
+        // Buildings — dense, mostly both sides
+        building = { side: buildIdx % 5 === 0 ? (buildIdx % 2 === 0 ? 'R' : 'L') : 'B', variant: buildIdx % 5 };
         buildIdx++;
       } else if (section === 0 || section === 2) {
         // Trees
