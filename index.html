@@ -1572,8 +1572,9 @@ function drawCar() {
   // Yaw: rotate nose into the curve direction
   // Lean: shift body outward (opposite to steer) simulating body roll
   const steerVal = player.steer || 0;
-  const yawAngle = steerVal * 0.14;  // ~8 degrees nose rotation into curve
-  const leanPx   = -steerVal * 2;    // 2px body roll to outside of curve
+  const speedFrac = Math.min(player.speed / (LEVEL_SPEEDS[Math.min(level-1, LEVEL_SPEEDS.length-1)] || 1), 1);
+  const yawAngle = steerVal * 0.14 * speedFrac;  // yaw only when moving
+  const leanPx   = -steerVal * 2 * speedFrac;    // lean only when moving
   ctx.save();
   ctx.translate(cx + leanPx, cy);
   ctx.rotate(yawAngle);
