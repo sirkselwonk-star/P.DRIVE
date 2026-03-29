@@ -1644,14 +1644,6 @@ function drawCar() {
   ctx.rotate(yawAngle);
   ctx.translate(-cx - leanPx, -cy);
 
-  // Hill pitch: scale vertically anchored at car rear
-  // Uphill (positive) stretches car taller, downhill squashes it
-  const hillScale = 1 - (player.hillSlope || 0) * 14;
-  const rearY = cy + 16; // anchor point at rear of car
-  ctx.translate(0, rearY);
-  ctx.scale(1, hillScale);
-  ctx.translate(0, -rearY);
-
   // Exhaust plume (behind car body)
   drawExhaust(cx, cy, 74, 34);
 
@@ -1661,55 +1653,81 @@ function drawCar() {
   ctx.ellipse(cx, cy + 22, 42, 10, 0, 0, Math.PI*2);
   ctx.fill();
 
-  // === Rear wheels (wide, exposed, behind body) ===
+  // === Rear wheels (drawn OUTSIDE pitch transform so they don't compress) ===
   [[-32, 6], [32, 6]].forEach(([ox, oy]) => {
-    // Tire
     ctx.fillStyle = '#1a1a1a';
     ctx.beginPath();
     ctx.roundRect(cx + ox - 11, cy + oy - 8, 22, 16, 3);
     ctx.fill();
-    // Tread highlight
     ctx.fillStyle = '#2a2a2a';
     ctx.beginPath();
     ctx.roundRect(cx + ox - 10, cy + oy - 6, 20, 12, 2);
     ctx.fill();
-    // Hub
     ctx.fillStyle = skin.hub;
     ctx.beginPath();
     ctx.ellipse(cx + ox, cy + oy, 5, 5, 0, 0, Math.PI*2);
     ctx.fill();
   });
 
+  // === Front wheels (drawn OUTSIDE pitch transform, steerable) ===
+  const steer = player.steer || 0;
+  const steerAngle = steer * 0.45;
+  [[-18, -28], [18, -28]].forEach(([ox, oy]) => {
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(cx + ox * 0.4, cy + oy + 4);
+    ctx.lineTo(cx + ox, cy + oy);
+    ctx.stroke();
+    ctx.save();
+    ctx.translate(cx + ox, cy + oy);
+    ctx.rotate(steerAngle);
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath();
+    ctx.roundRect(-7, -5, 14, 10, 2);
+    ctx.fill();
+    ctx.fillStyle = skin.hub;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 3, 3, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // Hill pitch: scale vertically anchored at car rear
+  // Only affects the body, wings, cockpit — not wheels
+  const hillScale = 1 - (player.hillSlope || 0) * 14;
+  const rearY = cy + 16;
+  ctx.translate(0, rearY);
+  ctx.scale(1, hillScale);
+  ctx.translate(0, -rearY);
+
   // === Rear axle / diffuser ===
   ctx.fillStyle = '#333';
   ctx.fillRect(cx - 30, cy + 12, 60, 3);
 
   // === Rear wing ===
-  // Wing endplates
   ctx.fillStyle = skin.body;
   ctx.fillRect(cx - 34, cy - 14, 4, 14);
   ctx.fillRect(cx + 30, cy - 14, 4, 14);
-  // Wing main plane
   const wingGrad = ctx.createLinearGradient(cx, cy - 16, cx, cy - 8);
   wingGrad.addColorStop(0, skin.roofA);
   wingGrad.addColorStop(1, skin.roofB);
   ctx.fillStyle = wingGrad;
   ctx.fillRect(cx - 34, cy - 16, 68, 5);
-  // Wing flap
   ctx.fillStyle = skin.stripe;
   ctx.fillRect(cx - 32, cy - 10, 64, 3);
 
   // === Main body (narrow F1 monocoque) ===
   ctx.fillStyle = skin.body;
   ctx.beginPath();
-  ctx.moveTo(cx - 14, cy + 14);    // rear left
-  ctx.lineTo(cx - 16, cy - 4);     // widens at sidepods
-  ctx.lineTo(cx - 12, cy - 22);    // narrows toward nose
-  ctx.lineTo(cx - 6,  cy - 38);    // nose tip left
-  ctx.lineTo(cx + 6,  cy - 38);    // nose tip right
-  ctx.lineTo(cx + 12, cy - 22);    // narrows toward nose
-  ctx.lineTo(cx + 16, cy - 4);     // widens at sidepods
-  ctx.lineTo(cx + 14, cy + 14);    // rear right
+  ctx.moveTo(cx - 14, cy + 14);
+  ctx.lineTo(cx - 16, cy - 4);
+  ctx.lineTo(cx - 12, cy - 22);
+  ctx.lineTo(cx - 6,  cy - 38);
+  ctx.lineTo(cx + 6,  cy - 38);
+  ctx.lineTo(cx + 12, cy - 22);
+  ctx.lineTo(cx + 16, cy - 4);
+  ctx.lineTo(cx + 14, cy + 14);
   ctx.closePath();
   ctx.fill();
 
@@ -1725,11 +1743,9 @@ function drawCar() {
 
   // === Sidepods ===
   ctx.fillStyle = shadeColor(skin.body, 15);
-  // Left sidepod
   ctx.beginPath();
   ctx.roundRect(cx - 20, cy - 8, 8, 18, 2);
   ctx.fill();
-  // Right sidepod
   ctx.beginPath();
   ctx.roundRect(cx + 12, cy - 8, 8, 18, 2);
   ctx.fill();
@@ -1758,32 +1774,6 @@ function drawCar() {
   ctx.beginPath();
   ctx.arc(cx, cy - 15, 3, 0, Math.PI);
   ctx.fill();
-
-  // === Front wheels (smaller, further forward, steerable) ===
-  const steer = player.steer || 0;
-  const steerAngle = steer * 0.45; // max ~25 degrees
-  [[-18, -28], [18, -28]].forEach(([ox, oy]) => {
-    // Suspension arm
-    ctx.strokeStyle = '#555';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(cx + ox * 0.4, cy + oy + 4);
-    ctx.lineTo(cx + ox, cy + oy);
-    ctx.stroke();
-    // Tire (rotated for steering)
-    ctx.save();
-    ctx.translate(cx + ox, cy + oy);
-    ctx.rotate(steerAngle);
-    ctx.fillStyle = '#1a1a1a';
-    ctx.beginPath();
-    ctx.roundRect(-7, -5, 14, 10, 2);
-    ctx.fill();
-    ctx.fillStyle = skin.hub;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 3, 3, 0, 0, Math.PI*2);
-    ctx.fill();
-    ctx.restore();
-  });
 
   // === Front nose tip ===
   ctx.fillStyle = skin.stripe;
