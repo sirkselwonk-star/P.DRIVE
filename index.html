@@ -443,7 +443,7 @@ function buildRoad() {
        Math.sin(i * 0.020) *  0.032,
       -Math.sin(i * 0.028) *  0.022,
     ][hillPhase];
-    let billboard = null, sign = null, tree = null, tires = null, building = null;
+    let billboard = null, sign = null, tree = null, tires = null, building = null, cliff = null;
     if (i > 40 && i % 180 === 0) {
       billboard = { ...BILLBOARD_DATA[bbIdx % BILLBOARD_DATA.length], side: bbIdx % 2 === 0 ? 'R' : 'L' };
       bbIdx++;
@@ -451,16 +451,19 @@ function buildRoad() {
       sign = { ...SIGN_DATA[signIdx % SIGN_DATA.length], side: signIdx % 2 === 0 ? 'L' : 'R' };
       signIdx++;
     } else if (i > 10 && i % 2 === 0) {
-      // Cycle: trees / tires / trees / buildings
-      const section = Math.floor(i / 120) % 4;
+      // Cycle: trees / tires / trees / buildings / mountains
+      const section = Math.floor(i / 120) % 5;
       if (section === 1 && i % 8 === 0) {
         // Tire piles
         tires = { side: tiresIdx % 2 === 0 ? 'R' : 'L', count: 2 + (tiresIdx % 3) };
         tiresIdx++;
       } else if (section === 3) {
-        // Buildings — dense, mostly both sides
+        // Buildings
         building = { side: buildIdx % 5 === 0 ? (buildIdx % 2 === 0 ? 'R' : 'L') : 'B', variant: buildIdx % 5 };
         buildIdx++;
+      } else if (section === 4) {
+        // Mountain cliffs on both sides
+        cliff = { seed: i * 17 + 31 };
       } else if (section === 0 || section === 2) {
         // Trees
         tree = { side: treeIdx % 5 === 0 ? (treeIdx % 2 === 0 ? 'R' : 'L') : 'B', variant: treeIdx % 4 };
@@ -468,7 +471,7 @@ function buildRoad() {
       }
     }
     const checkpoint = checkpointSegs.includes(i);
-    segments.push({ curve, hill, coin: i > 20 && i % 17 === 0, billboard, sign, tree, tires, building, checkpoint });
+    segments.push({ curve, hill, coin: i > 20 && i % 17 === 0, billboard, sign, tree, tires, building, cliff, checkpoint });
   }
 }
 
@@ -1150,6 +1153,7 @@ function drawRoad(style) {
   for (let r = 0; r < rows.length; r++) {
     const { seg, screenY, roadPx, cx } = rows[r];
     if (roadPx < 3) continue;
+    if (seg.cliff)      drawCliff(seg.cliff, cx, screenY, roadPx, style);
     if (seg.tree)       drawTree(seg.tree, cx, screenY, roadPx, style);
     if (seg.tires)      drawTirePile(seg.tires, cx, screenY, roadPx);
     if (seg.building)   drawBuilding(seg.building, cx, screenY, roadPx);
@@ -1246,6 +1250,75 @@ function drawSign(sg, cx, screenY, roadPx) {
       ctx.fillText(sg.line2, bx, top + sw * 0.55);
     }
   }
+}
+
+function drawCliff(cl, cx, screenY, roadPx, style) {
+  const seed = cl.seed;
+  function srand(n) { return ((Math.sin(n * 127.1 + seed * 43.7) * 43758.5) % 1 + 1) % 1; }
+
+  const baseColor = shadeColor(style.fog, -35);
+  const lightColor = shadeColor(style.fog, -15);
+  const darkColor = shadeColor(style.fog, -55);
+
+  [1, -1].forEach(side => {
+    const cliffX = cx + side * roadPx * 1.9;
+    const cliffH = roadPx * (1.8 + srand(seed + side) * 1.4);
+    const cliffW = roadPx * 1.2;
+    if (cliffW < 3) return;
+
+    const top = screenY - cliffH;
+
+    // Main rock face
+    ctx.fillStyle = baseColor;
+    ctx.beginPath();
+    ctx.moveTo(cliffX - cliffW * 0.5, screenY);
+    ctx.lineTo(cliffX - cliffW * 0.45, top + cliffH * 0.15);
+    ctx.lineTo(cliffX - cliffW * 0.2, top);
+    ctx.lineTo(cliffX + cliffW * 0.1, top + cliffH * 0.05);
+    ctx.lineTo(cliffX + cliffW * 0.35, top + cliffH * 0.1);
+    ctx.lineTo(cliffX + cliffW * 0.5, screenY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Light face (highlight side)
+    ctx.fillStyle = lightColor;
+    ctx.beginPath();
+    ctx.moveTo(cliffX - cliffW * 0.2, top);
+    ctx.lineTo(cliffX + cliffW * 0.1, top + cliffH * 0.05);
+    ctx.lineTo(cliffX + cliffW * 0.05, screenY);
+    ctx.lineTo(cliffX - cliffW * 0.2, screenY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Dark crevice
+    ctx.fillStyle = darkColor;
+    ctx.beginPath();
+    ctx.moveTo(cliffX - cliffW * 0.35, top + cliffH * 0.25);
+    ctx.lineTo(cliffX - cliffW * 0.25, top + cliffH * 0.15);
+    ctx.lineTo(cliffX - cliffW * 0.15, screenY);
+    ctx.lineTo(cliffX - cliffW * 0.35, screenY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Rocky ledge detail
+    if (cliffW > 6) {
+      ctx.fillStyle = lightColor;
+      const ledgeY = top + cliffH * (0.3 + srand(seed + side + 7) * 0.3);
+      ctx.fillRect(cliffX - cliffW * 0.4, ledgeY, cliffW * 0.6, Math.max(1, roadPx * 0.04));
+    }
+
+    // Snow cap on tallest cliffs
+    if (cliffH > roadPx * 2.5 && cliffW > 5) {
+      ctx.fillStyle = '#ddeeff';
+      ctx.beginPath();
+      ctx.moveTo(cliffX - cliffW * 0.25, top + cliffH * 0.08);
+      ctx.lineTo(cliffX - cliffW * 0.2, top);
+      ctx.lineTo(cliffX + cliffW * 0.1, top + cliffH * 0.05);
+      ctx.lineTo(cliffX + cliffW * 0.15, top + cliffH * 0.12);
+      ctx.closePath();
+      ctx.fill();
+    }
+  });
 }
 
 function drawTree(tr, cx, screenY, roadPx, style) {
