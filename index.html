@@ -1569,6 +1569,13 @@ function drawCar() {
     ctx.translate(-cx, -cy);
   }
 
+  // Rotate entire car slightly into the turn
+  const steerTilt = (player.steer || 0) * 0.12; // ~7 degrees max
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(steerTilt);
+  ctx.translate(-cx, -cy);
+
   // Exhaust plume (behind car body)
   drawExhaust(cx, cy, 74, 34);
 
@@ -1724,6 +1731,7 @@ function drawCar() {
   ctx.beginPath(); ctx.ellipse(cx + 32, cy - 2, 3, 2, 0, 0, Math.PI*2); ctx.fill();
   ctx.shadowBlur = 0;
 
+  ctx.restore(); // steer tilt
   if (isLandscape) ctx.restore();
 }
 
