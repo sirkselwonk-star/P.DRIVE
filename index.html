@@ -1633,8 +1633,6 @@ function drawCar() {
     ctx.translate(-cx, -cy);
   }
 
-  // Hill pitch: tilt car up/down based on road slope
-  const hillPitch = (player.hillSlope || 0) * -18; // negative hill = nose down
   // Yaw: rotate nose into the curve direction
   // Lean: shift body outward (opposite to steer) simulating body roll
   const steerVal = player.steer || 0;
@@ -1643,8 +1641,16 @@ function drawCar() {
   const leanPx   = -steerVal * 2 * speedFrac;    // lean only when moving
   ctx.save();
   ctx.translate(cx + leanPx, cy);
-  ctx.rotate(yawAngle + hillPitch);
+  ctx.rotate(yawAngle);
   ctx.translate(-cx - leanPx, -cy);
+
+  // Hill pitch: scale vertically anchored at car rear
+  // Uphill (positive) stretches car taller, downhill squashes it
+  const hillScale = 1 + (player.hillSlope || 0) * 14;
+  const rearY = cy + 16; // anchor point at rear of car
+  ctx.translate(0, rearY);
+  ctx.scale(1, hillScale);
+  ctx.translate(0, -rearY);
 
   // Exhaust plume (behind car body)
   drawExhaust(cx, cy, 74, 34);
