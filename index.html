@@ -826,6 +826,7 @@ function update(dt) {
     if (keys['ArrowRight']) steerInput =  1;
   }
   player.x += steerInput * steerPower;
+  player.steer = steerInput;
 
   // Road curve drift (gentle, always steerable against)
   const segIdx = (Math.floor(roadOffset) % segments.length + segments.length) % segments.length;
@@ -1675,7 +1676,9 @@ function drawCar() {
   ctx.arc(cx, cy - 15, 3, 0, Math.PI);
   ctx.fill();
 
-  // === Front wheels (smaller, further forward) ===
+  // === Front wheels (smaller, further forward, steerable) ===
+  const steer = player.steer || 0;
+  const steerAngle = steer * 0.45; // max ~25 degrees
   [[-18, -28], [18, -28]].forEach(([ox, oy]) => {
     // Suspension arm
     ctx.strokeStyle = '#555';
@@ -1684,16 +1687,19 @@ function drawCar() {
     ctx.moveTo(cx + ox * 0.4, cy + oy + 4);
     ctx.lineTo(cx + ox, cy + oy);
     ctx.stroke();
-    // Tire
+    // Tire (rotated for steering)
+    ctx.save();
+    ctx.translate(cx + ox, cy + oy);
+    ctx.rotate(steerAngle);
     ctx.fillStyle = '#1a1a1a';
     ctx.beginPath();
-    ctx.roundRect(cx + ox - 7, cy + oy - 5, 14, 10, 2);
+    ctx.roundRect(-7, -5, 14, 10, 2);
     ctx.fill();
-    // Hub
     ctx.fillStyle = skin.hub;
     ctx.beginPath();
-    ctx.ellipse(cx + ox, cy + oy, 3, 3, 0, 0, Math.PI*2);
+    ctx.ellipse(0, 0, 3, 3, 0, 0, Math.PI*2);
     ctx.fill();
+    ctx.restore();
   });
 
   // === Front nose tip ===
