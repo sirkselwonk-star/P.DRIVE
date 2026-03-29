@@ -1653,34 +1653,42 @@ function drawCar() {
   ctx.ellipse(cx, cy + 22, 42, 10, 0, 0, Math.PI*2);
   ctx.fill();
 
-  // === Rear wheels (drawn OUTSIDE pitch transform so they don't compress) ===
+  // Hill pitch parameters (used for positional offset on wheels, scale on body)
+  const hillScale = 1 - (player.hillSlope || 0) * 14;
+  const rearY = cy + 16;
+  // Pitch maps y → rearY + (y - rearY) * hillScale
+  // Wheels use this for position only (no compression)
+
+  // === Rear wheels (positioned with pitch, but not scaled) ===
   [[-32, 6], [32, 6]].forEach(([ox, oy]) => {
+    const wy = rearY + (cy + oy - rearY) * hillScale;
     ctx.fillStyle = '#1a1a1a';
     ctx.beginPath();
-    ctx.roundRect(cx + ox - 11, cy + oy - 8, 22, 16, 3);
+    ctx.roundRect(cx + ox - 11, wy - 8, 22, 16, 3);
     ctx.fill();
     ctx.fillStyle = '#2a2a2a';
     ctx.beginPath();
-    ctx.roundRect(cx + ox - 10, cy + oy - 6, 20, 12, 2);
+    ctx.roundRect(cx + ox - 10, wy - 6, 20, 12, 2);
     ctx.fill();
     ctx.fillStyle = skin.hub;
     ctx.beginPath();
-    ctx.ellipse(cx + ox, cy + oy, 5, 5, 0, 0, Math.PI*2);
+    ctx.ellipse(cx + ox, wy, 5, 5, 0, 0, Math.PI*2);
     ctx.fill();
   });
 
-  // === Front wheels (drawn OUTSIDE pitch transform, steerable) ===
+  // === Front wheels (positioned with pitch, steerable, not scaled) ===
   const steer = player.steer || 0;
   const steerAngle = steer * 0.45;
   [[-18, -28], [18, -28]].forEach(([ox, oy]) => {
+    const wy = rearY + (cy + oy - rearY) * hillScale;
     ctx.strokeStyle = '#555';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(cx + ox * 0.4, cy + oy + 4);
-    ctx.lineTo(cx + ox, cy + oy);
+    ctx.moveTo(cx + ox * 0.4, wy + 4);
+    ctx.lineTo(cx + ox, wy);
     ctx.stroke();
     ctx.save();
-    ctx.translate(cx + ox, cy + oy);
+    ctx.translate(cx + ox, wy);
     ctx.rotate(steerAngle);
     ctx.fillStyle = '#1a1a1a';
     ctx.beginPath();
@@ -1693,10 +1701,7 @@ function drawCar() {
     ctx.restore();
   });
 
-  // Hill pitch: scale vertically anchored at car rear
-  // Only affects the body, wings, cockpit — not wheels
-  const hillScale = 1 - (player.hillSlope || 0) * 14;
-  const rearY = cy + 16;
+  // Hill pitch: scale vertically anchored at car rear (body only)
   ctx.translate(0, rearY);
   ctx.scale(1, hillScale);
   ctx.translate(0, -rearY);
