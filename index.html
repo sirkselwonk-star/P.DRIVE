@@ -1569,12 +1569,15 @@ function drawCar() {
     ctx.translate(-cx, -cy);
   }
 
-  // Rotate entire car slightly into the turn
-  const steerTilt = (player.steer || 0) * 0.12; // ~7 degrees max
+  // Yaw: rotate nose into the curve direction
+  // Lean: shift body outward (opposite to steer) simulating body roll
+  const steerVal = player.steer || 0;
+  const yawAngle = steerVal * 0.14;  // ~8 degrees nose rotation into curve
+  const leanPx   = -steerVal * 4;    // 4px body roll to outside of curve
   ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate(steerTilt);
-  ctx.translate(-cx, -cy);
+  ctx.translate(cx + leanPx, cy);
+  ctx.rotate(yawAngle);
+  ctx.translate(-cx - leanPx, -cy);
 
   // Exhaust plume (behind car body)
   drawExhaust(cx, cy, 74, 34);
