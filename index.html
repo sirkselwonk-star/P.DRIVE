@@ -1654,7 +1654,7 @@ function drawCar() {
   ctx.fill();
 
   // Hill pitch parameters (used for positional offset on wheels, scale on body)
-  const hillScale = 1 - (player.hillSlope || 0) * 14;
+  const hillScale = 1 - (player.hillSlope || 0) * 7;
   const rearY = cy + 16;
   // Pitch maps y → rearY + (y - rearY) * hillScale
   // Wheels use this for position only (no compression)
