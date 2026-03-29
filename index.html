@@ -1646,7 +1646,7 @@ function drawCar() {
 
   // Hill pitch: scale vertically anchored at car rear
   // Uphill (positive) stretches car taller, downhill squashes it
-  const hillScale = 1 + (player.hillSlope || 0) * 14;
+  const hillScale = 1 - (player.hillSlope || 0) * 14;
   const rearY = cy + 16; // anchor point at rear of car
   ctx.translate(0, rearY);
   ctx.scale(1, hillScale);
