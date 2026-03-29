@@ -421,6 +421,12 @@ function buildRoad() {
   const total = Math.ceil(levelDistance * 10) + DRAW_DIST;
   let bbIdx = 0, signIdx = 0;
   let treeIdx = 0, tiresIdx = 0, buildIdx = 0;
+  // Pre-compute checkpoint segment indices
+  const checkpointSegs = [];
+  for (let k = 0; k < NUM_CHECKPOINTS; k++) {
+    const dist = levelDistance * (k + 1) / (NUM_CHECKPOINTS + 1);
+    checkpointSegs.push(Math.round(dist / SCROLL_DIV));
+  }
   for (let i = 0; i < total; i++) {
     const phase = Math.floor(i / 35) % 4;
     const curve = [
@@ -461,7 +467,8 @@ function buildRoad() {
         treeIdx++;
       }
     }
-    segments.push({ curve, hill, coin: i > 20 && i % 17 === 0, billboard, sign, tree, tires, building });
+    const checkpoint = checkpointSegs.includes(i);
+    segments.push({ curve, hill, coin: i > 20 && i % 17 === 0, billboard, sign, tree, tires, building, checkpoint });
   }
 }
 
@@ -1142,12 +1149,13 @@ function drawRoad(style) {
   for (let r = 0; r < rows.length; r++) {
     const { seg, screenY, roadPx, cx } = rows[r];
     if (roadPx < 3) continue;
-    if (seg.tree)      drawTree(seg.tree, cx, screenY, roadPx, style);
-    if (seg.tires)     drawTirePile(seg.tires, cx, screenY, roadPx);
-    if (seg.building)  drawBuilding(seg.building, cx, screenY, roadPx);
+    if (seg.tree)       drawTree(seg.tree, cx, screenY, roadPx, style);
+    if (seg.tires)      drawTirePile(seg.tires, cx, screenY, roadPx);
+    if (seg.building)   drawBuilding(seg.building, cx, screenY, roadPx);
+    if (seg.checkpoint) drawCheckpointGate(cx, screenY, roadPx);
     if (roadPx < 5) continue;
-    if (seg.billboard) drawBillboard(seg.billboard, cx, screenY, roadPx);
-    if (seg.sign)      drawSign(seg.sign, cx, screenY, roadPx);
+    if (seg.billboard)  drawBillboard(seg.billboard, cx, screenY, roadPx);
+    if (seg.sign)       drawSign(seg.sign, cx, screenY, roadPx);
   }
 }
 
@@ -1356,6 +1364,64 @@ function drawTirePile(tp, cx, screenY, roadPx) {
       ctx.ellipse(tx, ty, tireR * 0.5, tireR * 0.35, 0, 0, Math.PI * 2);
       ctx.fill();
     }
+  }
+}
+
+function drawCheckpointGate(cx, screenY, roadPx) {
+  const postSpan = roadPx * 1.15;  // half-width between posts (just outside road)
+  const postW = Math.max(3, roadPx * 0.14);
+  const postH = roadPx * 1.6;
+  const bannerH = roadPx * 0.45;
+  if (postW < 2) return;
+
+  const leftX  = cx - postSpan;
+  const rightX = cx + postSpan;
+  const topY   = screenY - postH;
+
+  // Posts — white with red/white candy stripe
+  [leftX, rightX].forEach(px => {
+    ctx.fillStyle = '#eeeeee';
+    ctx.fillRect(px - postW / 2, topY, postW, postH);
+    // Candy stripes
+    const stripeCount = Math.max(2, Math.floor(postH / (postW * 1.5)));
+    const stripeH = postH / (stripeCount * 2);
+    ctx.fillStyle = '#dd2222';
+    for (let s = 0; s < stripeCount; s++) {
+      ctx.fillRect(px - postW / 2, topY + s * stripeH * 2, postW, stripeH);
+    }
+  });
+
+  // Cross-beam / banner
+  const bannerY = topY;
+  ctx.fillStyle = '#222222';
+  ctx.fillRect(leftX - postW / 2, bannerY, rightX - leftX + postW, bannerH);
+
+  // Checkerboard pattern on banner edges
+  const checkSize = Math.max(2, bannerH * 0.25);
+  const bannerLeft = leftX - postW / 2;
+  const bannerWidth = rightX - leftX + postW;
+  ctx.fillStyle = '#ffffff';
+  const cols = Math.floor(bannerWidth / checkSize);
+  for (let r = 0; r < 2; r++) {
+    for (let c = 0; c < cols; c++) {
+      if ((r + c) % 2 === 0) {
+        ctx.fillRect(bannerLeft + c * checkSize, bannerY + r * checkSize, checkSize, checkSize);
+      }
+    }
+  }
+
+  // "CHECKPOINT" text
+  if (bannerH > 6) {
+    ctx.save();
+    const fs = Math.max(6, bannerH * 0.45);
+    ctx.font = `bold ${fs}px Orbitron`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#39FF14';
+    ctx.shadowColor = '#39FF14';
+    ctx.shadowBlur = 8;
+    ctx.fillText('CHECKPOINT', cx, bannerY + bannerH * 0.6);
+    ctx.restore();
   }
 }
 
